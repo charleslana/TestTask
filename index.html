@@ -74,9 +74,37 @@
                         <button class="button is-medium" :disabled="!test.url" @click="toggleModalAction">Adicionar
                             Ações</button>
                     </div>
+                    <div class="box mt-5" v-if="test.actions.length">
+                        <p class="title is-5">Ações configuradas</p>
+                        <div v-for="(action, index) in test.actions" :key="index" class="card mb-4">
+                            <header class="card-header">
+                                <p class="card-header-title">
+                                    {{ actions.find(a => a.type === action.type)?.name || action.type }}
+                                </p>
+                                <div class="card-header-icon">
+                                    <label class="checkbox">
+                                        <input type="checkbox" :checked="!action.disabled"
+                                            @change="action.disabled = !$event.target.checked">
+                                        Habilitado
+                                    </label>
+                                </div>
+                            </header>
+                            <div class="card-content">
+                                <div class="content">
+                                    <p><strong>Seletor:</strong> {{ action.selector }}</p>
+                                    <p v-if="action.text"><strong>Texto:</strong> {{ action.text }}</p>
+                                </div>
+                            </div>
+                            <footer class="card-footer">
+                                <a class="card-footer-item" @click="editAction(index)">Editar</a>
+                                <a class="card-footer-item has-text-danger"
+                                    @click="showModalDeleteConfirm(index)">Excluir</a>
+                            </footer>
+                        </div>
+                    </div>
                 </div>
                 <div class="column has-text-centered">
-                    <button class="button is-primary is-large mb-5 floating-start-btn" @click="startTest"
+                    <button class="button is-primary is-large mb-5" @click="startTest"
                         :disabled="isDisabled || !test.url">Iniciar o teste</button>
                     <div class="is-flex is-justify-content-center" v-if="testNotification">
                         <article :class="testFail ? 'message is-danger' : 'message is-success'">
@@ -104,10 +132,11 @@
                     <p class="modal-card-title">Ações</p>
                     <button class="delete" aria-label="close" @click="toggleModalAction"></button>
                 </header>
-                <section class="modal-card-body">
+                <section class="modal-card-body" id="modal-card-body">
                     <input class="input is-medium mb-5 is-shadowless" type="text" placeholder="Pesquisar ações"
-                        v-model="searchTerm" />
-                    <div class="card mb-5 is-clickable" v-for="(action, index) in filteredActions" :key="index">
+                        v-model.trim="searchTerm" />
+                    <div class="card mb-5 is-clickable" v-for="(action, index) in filteredActions" :key="index"
+                        @click="selectAction(action)">
                         <div class="card-content">
                             <div class="content is-size-3 has-text-weight-bold has-text-centered">
                                 {{ action.name }}
@@ -123,6 +152,60 @@
             </div>
         </div>
         <!-- -->
+        <!-- Modal de configuração da ação selecionada -->
+        <div class="modal" :class="{ 'is-active': modalConfigAction }">
+            <div class="modal-background" @click="closeModalConfig"></div>
+            <div class="modal-card" @click.stop>
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ actionCurrent?.name }}</p>
+                    <button class="delete" aria-label="close" @click="closeModalConfig"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Seletor</label>
+                        <div class="control">
+                            <input class="input" type="text" v-model.trim="actionForm.selector"
+                                placeholder="Ex: #meu-botao" />
+                        </div>
+                    </div>
+                    <div class="field" v-if="actionCurrent && ['fill', 'type'].includes(actionCurrent.type)">
+                        <label class="label">Texto</label>
+                        <div class="control">
+                            <input class="input" type="text" v-model.trim="actionForm.text"
+                                placeholder="Ex: texto para digitar" />
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-success" @click="confirmAction" :disabled="!isValidActionForm">Salvar
+                            Ação</button>
+                        <button class="button" @click="closeModalConfig">Cancelar</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!---->
+        <!-- Modal de Confirmação de Exclusão -->
+        <div class="modal" :class="{ 'is-active': modalDeleteConfirm }">
+            <div class="modal-background" @click="closeModalDeleteConfirm"></div>
+            <div class="modal-card" @click.stop>
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Confirmação</p>
+                    <button class="delete" aria-label="close" @click="closeModalDeleteConfirm"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>Você realmente deseja excluir esta ação?</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-danger" @click="confirmDeleteAction">Sim</button>
+                        <button class="button" @click="closeModalDeleteConfirm">Cancelar</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!---->
     </div>
     <script src="vue@2.js"></script>
     <script src="script.js"></script>

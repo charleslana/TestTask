@@ -38,6 +38,15 @@ new Vue({
             { type: 'navigate', name: 'Navegar' },
         ],
         searchTerm: '',
+        actionCurrent: null,
+        modalConfigAction: false,
+        actionForm: {
+            selector: '',
+            text: ''
+        },
+        editIndex: null,
+        modalDeleteConfirm: false,
+        deleteIndex: null
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {
@@ -64,6 +73,13 @@ new Vue({
             return this.actions.filter(action =>
                 action.name.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
+        },
+        isValidActionForm() {
+            if (!this.actionForm.selector.trim()) return false;
+            if (['fill', 'type'].includes(this.actionCurrent?.type)) {
+                return !!this.actionForm.text.trim();
+            }
+            return true;
         }
     },
     methods: {
@@ -91,7 +107,71 @@ new Vue({
         },
         toggleModalAction() {
             this.modalAction = !this.modalAction;
-        }
+            if (this.modalAction) {
+                this.$nextTick(() => {
+                    const modalBody = document.getElementById('modal-card-body');
+                    if (modalBody) {
+                        modalBody.scrollTop = 0;
+                    }
+                });
+            }
+        },
+        selectAction(action) {
+            this.actionCurrent = action;
+            this.actionForm = { selector: '', text: '' };
+            this.modalConfigAction = true;
+        },
+        editAction(index) {
+            const action = this.test.actions[index];
+            this.editIndex = index;
+            this.actionCurrent = this.actions.find(a => a.type === action.type);
+            this.actionForm = {
+                selector: action.selector,
+                text: action.text || ''
+            };
+            this.modalConfigAction = true;
+        },
+        deleteAction(index) {
+            this.test.actions.splice(index, 1);
+        },
+        confirmAction() {
+            const actionToSave = {
+                type: this.actionCurrent.type,
+                selector: this.actionForm.selector,
+                text: this.actionForm.text || '',
+                disabled: false
+            };
+
+            if (this.editIndex !== null) {
+                this.$set(this.test.actions, this.editIndex, actionToSave);
+                this.editIndex = null;
+            } else {
+                this.test.actions.push(actionToSave);
+            }
+
+            this.closeModalConfig();
+            this.toggleModalAction();
+        },
+        closeModalConfig() {
+            this.modalConfigAction = false;
+            this.actionForm = { selector: '', text: '' };
+            this.actionCurrent = null;
+            this.editIndex = null;
+        },
+        showModalDeleteConfirm(index) {
+            this.deleteIndex = index;
+            this.modalDeleteConfirm = true;
+        },
+        closeModalDeleteConfirm() {
+            this.modalDeleteConfirm = false;
+            this.deleteIndex = null;
+        },
+        confirmDeleteAction() {
+            if (this.deleteIndex !== null) {
+                this.test.actions.splice(this.deleteIndex, 1);
+            }
+            this.closeModalDeleteConfirm();
+        },
     },
     beforeDestroy() {
         window.electron.ipcRenderer.removeAllListeners('enable-start-button');
