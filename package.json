@@ -1,0 +1,72 @@
+{
+  "name": "electron-puppeteer",
+  "version": "0.0.1",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-linux": "electron-builder -l",
+    "build-win": "electron-builder -w",
+    "build-win-portable": "electron-builder -w portable",
+    "test": "node puppeteer.js"
+  },
+  "keywords": [],
+  "author": "Charles Lana",
+  "license": "ISC",
+  "description": "Descrição",
+  "dependencies": {
+    "puppeteer-core": "^24.8.1"
+  },
+  "devDependencies": {
+    "electron": "^36.1.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.testtask.charleslana",
+    "productName": "TestTask",
+    "copyright": "Copyright © 2025 ${author}",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
+      "extraResources": [
+        {
+          "from": "node_modules/electron/dist/electron.exe",
+          "to": "node_modules/electron/dist/electron.exe"
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "${productName}-Windows-${version}-Portable.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm",
+        "snap"
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-Linux-${version}.${ext}",
+      "extraResources": [
+        {
+          "from": "node_modules/electron/dist/electron",
+          "to": "node_modules/electron/dist/electron"
+        }
+      ]
+    }
+  }
+}
