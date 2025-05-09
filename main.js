@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const childProcess = require('child_process');
 const puppeteer = require('puppeteer-core');
@@ -10,7 +10,7 @@ let busyWindow;
 let electronProcess;
 
 function createWindow() {
-    const win = new BrowserWindow({
+    const mainWindow = new BrowserWindow({
         width: 1200,
         height: 720,
         webPreferences: {
@@ -19,7 +19,58 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js')
         }
     });
-    win.loadFile('index.html');
+    mainWindow.loadFile('index.html');
+    const template = [
+        {
+            label: 'Principal',
+            submenu: [
+                {
+                    label: 'Fechar',
+                    accelerator: 'Ctrl+Q',
+                    click: () => {
+                        app.quit();
+                    }
+                }
+            ]
+        },
+        {
+            label: 'Opções',
+            submenu: [
+                {
+                    label: 'Recarregar',
+                    accelerator: 'Ctrl+R',
+                    click: () => {
+                        mainWindow.reload();
+                    }
+                },
+                {
+                    label: 'Forçar Recarregamento',
+                    accelerator: 'Shift+Ctrl+R',
+                    click: () => {
+                        mainWindow.webContents.reloadIgnoringCache();
+                    }
+                },
+                { type: 'separator' },
+                {
+                    label: 'Alternar Developer Tools',
+                    accelerator: 'Ctrl+Shift+I',
+                    click: () => {
+                        mainWindow.webContents.toggleDevTools();
+                    }
+                },
+                {
+                    label: 'Alternar Developer Tools (F12)',
+                    accelerator: 'F12',
+                    click: () => {
+                        mainWindow.webContents.toggleDevTools();
+                    }
+                }
+            ]
+        }
+    ];
+
+    const menu = Menu.buildFromTemplate(template);
+    Menu.setApplicationMenu(menu);
 }
 
 function createBusyWindow() {
@@ -31,7 +82,7 @@ function createBusyWindow() {
             contextIsolation: true
         }
     });
-
+    busyWindow.setMenu(null);
     busyWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(`
         <!DOCTYPE html>
         <html>
@@ -78,6 +129,7 @@ function createAboutWindow() {
 
 ipcMain.on('start-puppeteer', async (event, { test }) => {
     console.log('Iniciando automação no Puppeteer!');
+    console.log(test);
 
     process.env.ELECTRON_START = 'puppeteer';
 
@@ -106,38 +158,59 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
     event.sender.send('disable-start-button');
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    const browser = await puppeteer.connect({
+        browserURL: 'http://localhost:9222',
+        defaultViewport: null
+    });
+    const pages = await browser.pages();
+    const page = pages[0];
+    const base = new Base(page);
     const startTime = Date.now();
 
     try {
-        const browser = await puppeteer.connect({
-            browserURL: 'http://localhost:9222',
-            defaultViewport: null
-        });
-        const pages = await browser.pages();
-        const page = pages[0];
-        const base = new Base(page);
-
-        await base.goto(test.url ?? 'https://front.serverest.dev');
+        await base.goto(test.url); //https://front.serverest.dev
 
         for (const action of test.actions) {
-            if (action.type === 'type') {
-                //ação x
-            } else if (action.type === 'click') {
-                //ação y
+            if (Boolean(action.disabled)) {
+                continue;
+            }
+            const selector = action.selector.trim().startsWith('//')
+                ? `::-p-xpath(${action.selector})`
+                : action.selector;
+
+            switch (action.type) {
+                case 'type':
+                    await base.type(selector, action.text);
+                    break;
+                case 'fill':
+                    await base.fill(selector, action.text);
+                    break;
+                case 'click':
+                    await base.click(selector);
+                    break;
+                case 'enter':
+                    await base.enter();
+                    break;
+                case 'navigate':
+                    await base.goto(action.selector);
+                    break;
+                case 'assertText':
+                    await base.assertText(selector, action.text);
+                    break;
             }
         }
 
-        await base.fill('#email', 'email@email.com');
-        await base.type('#password', 'password');
-        await base.click('::-p-xpath(//button[@data-testid="entrar"])');
-        await base.assertText('.alert-dismissible > span', 'Email e/ou senha inválidos');
-        await base.screenshot();
-
-        await browser.disconnect();
+        // await base.fill('#email', 'email@email.com');
+        // await base.type('#password', 'password');
+        // await base.click('::-p-xpath(//button[@data-testid="entrar"])');
+        // await base.assertText('.alert-dismissible > span', 'Email e/ou senha inválidos');
     } catch (error) {
         console.error('Erro no Puppeteer:', error);
         event.sender.send('test-failed', error);
     } finally {
+        await base.screenshot();
+        await browser.close();
+        await browser.disconnect();
         if (electronProcess) {
             electronProcess.kill();
         }

@@ -73,4 +73,9 @@ export class Base {
             console.log(`Asserção bem-sucedida: "${actualText}" corresponde a "${expectedText}"`);
         }
     }
+
+    async enter() {
+        await this.page.keyboard.press('Enter');
+        console.log('Tecla enter pressionada com sucesso!');
+    }
 }

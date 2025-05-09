@@ -91,7 +91,8 @@
                             </header>
                             <div class="card-content">
                                 <div class="content">
-                                    <p><strong>Seletor:</strong> {{ action.selector }}</p>
+                                    <p><strong>{{ action.type === 'navigate' ? 'URL' : 'Seletor' }}:</strong> {{
+                                        action.selector }}</p>
                                     <p v-if="action.text"><strong>Texto:</strong> {{ action.text }}</p>
                                 </div>
                             </div>
@@ -161,18 +162,21 @@
                     <button class="delete" aria-label="close" @click="closeModalConfig"></button>
                 </header>
                 <section class="modal-card-body">
-                    <div class="field">
-                        <label class="label">Seletor</label>
+                    <!-- Seletor ou URL -->
+                    <div class="field" v-if="actionCurrent?.type !== 'enter'">
+                        <label class="label">{{ actionLabel }}</label>
                         <div class="control">
                             <input class="input" type="text" v-model.trim="actionForm.selector"
-                                placeholder="Ex: #meu-botao" />
+                                :placeholder="actionPlaceholder" />
                         </div>
                     </div>
-                    <div class="field" v-if="actionCurrent && ['fill', 'type'].includes(actionCurrent.type)">
+                    <!-- Campo de texto para ações específicas -->
+                    <div class="field"
+                        v-if="actionCurrent && ['fill', 'type', 'assertText'].includes(actionCurrent.type)">
                         <label class="label">Texto</label>
                         <div class="control">
                             <input class="input" type="text" v-model.trim="actionForm.text"
-                                placeholder="Ex: texto para digitar" />
+                                :placeholder="textPlaceholder" />
                         </div>
                     </div>
                 </section>

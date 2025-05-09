@@ -36,6 +36,7 @@ new Vue({
             { type: 'type', name: 'Digitar' },
             { type: 'enter', name: 'Enter' },
             { type: 'navigate', name: 'Navegar' },
+            { type: 'assertText', name: 'Validar texto' }
         ],
         searchTerm: '',
         actionCurrent: null,
@@ -75,11 +76,34 @@ new Vue({
             );
         },
         isValidActionForm() {
+            if (this.actionCurrent?.type === 'enter') return true;
             if (!this.actionForm.selector.trim()) return false;
-            if (['fill', 'type'].includes(this.actionCurrent?.type)) {
+            if (['fill', 'type', 'assertText'].includes(this.actionCurrent?.type)) {
                 return !!this.actionForm.text.trim();
             }
             return true;
+        },
+        actionLabel() {
+            if (this.actionCurrent?.type === 'navigate') {
+                return 'URL';
+            } else {
+                return 'Seletor';
+            }
+        },
+        actionPlaceholder() {
+            if (this.actionCurrent?.type === 'navigate') {
+                return 'Ex: https://meusite.com';
+            } else {
+                return 'Ex: #meu-seletor';
+            }
+        },
+        textPlaceholder() {
+            if (this.actionCurrent?.type === 'assertText') {
+                return 'Texto a validar';
+            } else if (this.actionCurrent?.type === 'fill' || this.actionCurrent?.type === 'type') {
+                return 'Texto a digitar';
+            }
+            return '';
         }
     },
     methods: {
@@ -126,7 +150,7 @@ new Vue({
             this.editIndex = index;
             this.actionCurrent = this.actions.find(a => a.type === action.type);
             this.actionForm = {
-                selector: action.selector,
+                selector: action.selector || '',
                 text: action.text || ''
             };
             this.modalConfigAction = true;
@@ -141,6 +165,13 @@ new Vue({
                 text: this.actionForm.text || '',
                 disabled: false
             };
+
+            if (this.actionCurrent.type !== 'enter') {
+                actionToSave.selector = this.actionForm.selector;
+                if (this.actionForm.text) {
+                    actionToSave.text = this.actionForm.text;
+                }
+            }
 
             if (this.editIndex !== null) {
                 this.$set(this.test.actions, this.editIndex, actionToSave);
