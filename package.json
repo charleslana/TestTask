@@ -1,5 +1,5 @@
 {
-  "name": "electron-puppeteer",
+  "name": "TestTask",
   "version": "0.0.1",
   "main": "main.js",
   "scripts": {
@@ -11,7 +11,9 @@
     "test": "node puppeteer.js"
   },
   "keywords": [],
-  "author": "Charles Lana",
+  "author": {
+    "name": "Charles Lana"
+  },
   "license": "ISC",
   "description": "Descrição",
   "dependencies": {
