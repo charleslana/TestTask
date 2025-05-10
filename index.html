@@ -76,32 +76,35 @@
                     </div>
                     <div class="box mt-5" v-if="test.actions.length">
                         <p class="title is-5">Ações configuradas</p>
-                        <div v-for="(action, index) in test.actions" :key="index" class="card mb-4">
-                            <header class="card-header">
-                                <p class="card-header-title">
-                                    {{ actions.find(a => a.type === action.type)?.name || action.type }}
-                                </p>
-                                <div class="card-header-icon">
-                                    <label class="checkbox">
-                                        <input type="checkbox" :checked="!action.disabled"
-                                            @change="action.disabled = !$event.target.checked">
-                                        Habilitado
-                                    </label>
+                        <draggable v-model="test.actions" :options="{ animation: 150 }">
+                            <div v-for="(action, index) in test.actions" :key="index"
+                                :class="['card', 'mb-4', { 'disabled-card': action.disabled }]" style="cursor: move;">
+                                <header class="card-header">
+                                    <p class="card-header-title">
+                                        {{ actions.find(a => a.type === action.type)?.name || action.type }}
+                                    </p>
+                                    <div class="card-header-icon">
+                                        <label class="checkbox is-clickable">
+                                            <input type="checkbox" :checked="!action.disabled"
+                                                @change="action.disabled = !$event.target.checked">
+                                            Habilitado
+                                        </label>
+                                    </div>
+                                </header>
+                                <div class="card-content">
+                                    <div class="content">
+                                        <p><strong>{{ action.type === 'navigate' ? 'URL' : 'Seletor' }}:</strong> {{
+                                            action.selector }}</p>
+                                        <p v-if="action.text"><strong>Texto:</strong> {{ action.text }}</p>
+                                    </div>
                                 </div>
-                            </header>
-                            <div class="card-content">
-                                <div class="content">
-                                    <p><strong>{{ action.type === 'navigate' ? 'URL' : 'Seletor' }}:</strong> {{
-                                        action.selector }}</p>
-                                    <p v-if="action.text"><strong>Texto:</strong> {{ action.text }}</p>
-                                </div>
+                                <footer class="card-footer">
+                                    <a class="card-footer-item" @click="editAction(index)">Editar</a>
+                                    <a class="card-footer-item has-text-danger"
+                                        @click="showModalDeleteConfirm(index)">Excluir</a>
+                                </footer>
                             </div>
-                            <footer class="card-footer">
-                                <a class="card-footer-item" @click="editAction(index)">Editar</a>
-                                <a class="card-footer-item has-text-danger"
-                                    @click="showModalDeleteConfirm(index)">Excluir</a>
-                            </footer>
-                        </div>
+                        </draggable>
                     </div>
                 </div>
                 <div class="column has-text-centered">
@@ -212,6 +215,10 @@
         <!---->
     </div>
     <script src="vue@2.js"></script>
+    <!-- Sortable.js -->
+    <script src="Sortable.min.js"></script>
+    <!-- Vue.Draggable -->
+    <script src="vuedraggable.umd.min.js"></script>
     <script src="script.js"></script>
 </body>
 

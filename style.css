@@ -19,3 +19,9 @@
 .input:focus {
     border-color: rgba(255, 255, 255, 0.5);
 }
+
+.disabled-card {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}

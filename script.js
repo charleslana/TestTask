@@ -140,6 +140,9 @@ new Vue({
                 });
             }
         },
+        closeModalAction() {
+            this.modalAction = false;
+        },
         selectAction(action) {
             this.actionCurrent = action;
             this.actionForm = { selector: '', text: '' };
@@ -181,7 +184,7 @@ new Vue({
             }
 
             this.closeModalConfig();
-            this.toggleModalAction();
+            this.closeModalAction();
         },
         closeModalConfig() {
             this.modalConfigAction = false;
@@ -202,7 +205,7 @@ new Vue({
                 this.test.actions.splice(this.deleteIndex, 1);
             }
             this.closeModalDeleteConfirm();
-        },
+        }
     },
     beforeDestroy() {
         window.electron.ipcRenderer.removeAllListeners('enable-start-button');
