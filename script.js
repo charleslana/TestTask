@@ -1,20 +1,3 @@
-//const startButton = document.getElementById('start-button');
-//startButton.addEventListener('click', () => {
-//    window.electron.ipcRenderer.send('start-puppeteer');
-//});
-
-//document.getElementById('about-button').addEventListener('click', () => {
-//    window.electron.ipcRenderer.send('about');
-//});
-
-//window.electron.ipcRenderer.on('disable-start-button', () => {
-//    startButton.disabled = true;
-//});
-
-//window.electron.ipcRenderer.on('enable-start-button', () => {
-//    startButton.disabled = false;
-//});
-
 //window.electron.ipcRenderer.on('log-message', (message) => {
 //    console.log(message);
 //});
@@ -25,9 +8,17 @@ new Vue({
         isDisabled: false,
         testNotification: false,
         testFail: '',
-        test: {
-            url: '',
-            actions: []
+        // test: {
+        //     url: '',
+        //     actions: []
+        // },
+        workspace: {
+            id: '',
+            name: '',
+            test: {
+                url: '',
+                actions: []
+            }
         },
         modalAction: false,
         actions: [
@@ -62,12 +53,24 @@ new Vue({
         this.recoveryTest();
     },
     watch: {
-        test: {
-            handler(newValue) {
-                localStorage.setItem('test', JSON.stringify(newValue));
+        // test: {
+        //     handler(newValue) {
+        //         localStorage.setItem('test', JSON.stringify(newValue));
+        //     },
+        //     deep: true
+        // },
+        'workspace.test': {
+            handler(newTest) {
+                if (this.selectedWorkspaceIndex !== null) {
+                    const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+                    if (workspaces[this.selectedWorkspaceIndex]) {
+                        workspaces[this.selectedWorkspaceIndex].test = newTest;
+                        localStorage.setItem('workspaces', JSON.stringify(workspaces));
+                    }
+                }
             },
             deep: true
-        },
+        }
     },
     computed: {
         filteredActions() {
@@ -111,7 +114,7 @@ new Vue({
             this.isDisabled = true;
             this.testNotification = false;
             this.testFail = '';
-            window.electron.ipcRenderer.send('start-puppeteer', { test: this.test });
+            window.electron.ipcRenderer.send('start-puppeteer', { test: this.workspace.test, version: this.workspace.version });
         },
         showAbout() {
             window.electron.ipcRenderer.send('about');
@@ -124,9 +127,17 @@ new Vue({
             this.testNotification = false;
         },
         recoveryTest() {
-            const test = localStorage.getItem('test');
-            if (test) {
-                this.test = JSON.parse(test);
+            // const test = localStorage.getItem('test');
+            // if (test) {
+            //     this.test = JSON.parse(test);
+            // }
+            const index = localStorage.getItem('selectedWorkspaceIndex');
+            if (index !== null) {
+                this.selectedWorkspaceIndex = parseInt(index);
+                const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+                if (workspaces[this.selectedWorkspaceIndex]) {
+                    this.workspace = workspaces[this.selectedWorkspaceIndex];
+                }
             }
         },
         toggleModalAction() {
@@ -138,10 +149,12 @@ new Vue({
                         modalBody.scrollTop = 0;
                     }
                 });
+                this.searchTerm = '';
             }
         },
         closeModalAction() {
             this.modalAction = false;
+            this.searchTerm = '';
         },
         selectAction(action) {
             this.actionCurrent = action;
@@ -149,7 +162,7 @@ new Vue({
             this.modalConfigAction = true;
         },
         editAction(index) {
-            const action = this.test.actions[index];
+            const action = this.workspace.test.actions[index];
             this.editIndex = index;
             this.actionCurrent = this.actions.find(a => a.type === action.type);
             this.actionForm = {
@@ -159,7 +172,7 @@ new Vue({
             this.modalConfigAction = true;
         },
         deleteAction(index) {
-            this.test.actions.splice(index, 1);
+            this.workspace.test.actions.splice(index, 1);
         },
         confirmAction() {
             const actionToSave = {
@@ -177,10 +190,10 @@ new Vue({
             }
 
             if (this.editIndex !== null) {
-                this.$set(this.test.actions, this.editIndex, actionToSave);
+                this.$set(this.workspace.test.actions, this.editIndex, actionToSave);
                 this.editIndex = null;
             } else {
-                this.test.actions.push(actionToSave);
+                this.workspace.test.actions.push(actionToSave);
             }
 
             this.closeModalConfig();
@@ -202,9 +215,16 @@ new Vue({
         },
         confirmDeleteAction() {
             if (this.deleteIndex !== null) {
-                this.test.actions.splice(this.deleteIndex, 1);
+                this.workspace.test.actions.splice(this.deleteIndex, 1);
             }
             this.closeModalDeleteConfirm();
+        },
+        removeSelectedWorkspace() {
+            localStorage.removeItem('selectedWorkspaceIndex');
+            window.location.href = 'workspaces.html';
+        },
+        openTestConfig() {
+            alert('Função não implementada');
         }
     },
     beforeDestroy() {

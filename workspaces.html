@@ -1,0 +1,212 @@
+<!-- workspaces.html -->
+<!DOCTYPE html>
+<html data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Workspaces</title>
+    <link rel="stylesheet" href="bulma.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div id="workspace-app" class="container mt-6">
+        <h1 class="title has-text-centered">Workspaces</h1>
+
+        <div class="buttons is-centered my-4">
+            <button class="button is-primary" @click="showCreateModal = true">Criar Workspace</button>
+            <button class="button is-link" @click="importWorkspace">Importar Workspace</button>
+        </div>
+
+        <div class="box" v-for="(workspace, index) in workspaces" :key="index">
+            <div class="level">
+                <div class="level-left">
+                    <div>
+                        <strong>Nome:</strong>
+                        <span>{{ workspace.name }}</span>
+                        <a href="#" class="ml-2" @click.prevent="openEditModal(index)">✏️ Editar nome</a><br />
+                        <strong>Versão:</strong> {{ workspace.version }}<br />
+                        <strong>Tipo:</strong> {{ workspace.testType === 'e2e' ? 'Testes E2E' : 'Testes API' }}
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="buttons">
+                        <button class="button is-success" @click="openWorkspace(index)">Abrir</button>
+                        <button class="button is-warning" @click="exportWorkspace(index)">Exportar</button>
+                        <button class="button is-danger" @click="deleteWorkspace(index)">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal" :class="{ 'is-active': showCreateModal }">
+            <div class="modal-background" @click="showCreateModal = false"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Novo Workspace</p>
+                    <button class="delete" aria-label="close" @click="showCreateModal = false"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Nome do Workspace</label>
+                        <div class="control">
+                            <input class="input" type="text" v-model.trim="newWorkspaceName" required maxlength="50"
+                                placeholder="Ex: Meu Projeto" required />
+                        </div>
+                    </div>
+                    <div class="field mt-4">
+                        <label class="label">Tipo de Teste</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select v-model="newWorkspaceTestType" required>
+                                    <option value="e2e">Testes E2E</option>
+                                    <option value="api">Testes API</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-success" @click="confirmCreateWorkspace"
+                            :disabled="!canCreateWorkspace">Criar</button>
+                        <button class="button" @click="showCreateModal = false">Cancelar</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!-- Modal Editar -->
+        <div class="modal" :class="{ 'is-active': showEditModal }">
+            <div class="modal-background" @click="showEditModal = false"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Editar Nome do Workspace</p>
+                    <button class="delete" aria-label="close" @click="showEditModal = false"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Nome do Workspace</label>
+                        <div class="control">
+                            <input class="input" type="text" v-model.trim="editWorkspaceName" required maxlength="50"
+                                placeholder="Novo nome do workspace" required />
+                        </div>
+                    </div>
+
+                    <div class="field mt-4">
+                        <label class="label">Versão</label>
+                        <input class="input" type="text" :value="workspaces[editWorkspaceIndex]?.version" disabled />
+                    </div>
+
+                    <div class="field mt-4">
+                        <label class="label">Tipo de Teste</label>
+                        <input class="input" type="text"
+                            :value="workspaces[editWorkspaceIndex]?.testType === 'e2e' ? 'Testes E2E' : 'Testes API'"
+                            disabled />
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-success" @click="confirmEditWorkspace"
+                            :disabled="!canEditWorkspace">Salvar</button>
+                        <button class="button" @click="showEditModal = false">Cancelar</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!---->
+    </div>
+
+    <script src="vue@2.js"></script>
+    <script>
+        new Vue({
+            el: '#workspace-app',
+            data: {
+                workspaces: JSON.parse(localStorage.getItem('workspaces') || '[]'),
+                showCreateModal: false,
+                newWorkspaceName: '',
+                newWorkspaceTestType: 'e2e',
+                showEditModal: false,
+                editWorkspaceIndex: null,
+                editWorkspaceName: '',
+            },
+            computed: {
+                canCreateWorkspace() {
+                    return this.newWorkspaceName.trim() !== '' &&
+                        this.newWorkspaceName.trim().length <= 50 &&
+                        this.newWorkspaceTestType !== '';
+                },
+                canEditWorkspace() {
+                    return this.editWorkspaceName.trim() !== '' &&
+                        this.editWorkspaceName.trim().length <= 50;
+                }
+            },
+            methods: {
+                async confirmCreateWorkspace() {
+                    if (this.canCreateWorkspace) {
+                        this.workspaces.push({
+                            name: this.newWorkspaceName.trim(),
+                            version: await window.electronAPI.getAppVersion(),
+                            testType: this.newWorkspaceTestType,
+                            test: {
+                                url: '',
+                                actions: []
+                            }
+                        });
+                        this.saveWorkspaces();
+                        this.newWorkspaceName = '';
+                        this.newWorkspaceTestType = 'e2e';
+                        this.showCreateModal = false;
+                    }
+                },
+                deleteWorkspace(index) {
+                    const workspaceName = this.workspaces[index].name;
+                    if (confirm(`Tem certeza que deseja excluir o workspace "${workspaceName}"? Essa ação não pode ser desfeita.`)) {
+                        this.workspaces.splice(index, 1);
+                        this.saveWorkspaces();
+                    }
+                },
+                openWorkspace(index) {
+                    localStorage.setItem('selectedWorkspaceIndex', index);
+                    window.location.href = 'index.html';
+                },
+                saveWorkspaces() {
+                    localStorage.setItem('workspaces', JSON.stringify(this.workspaces));
+                },
+                exportWorkspace(index) {
+                    const workspace = this.workspaces[index];
+                    window.electronAPI.exportWorkspace(workspace).then((success) => {
+                        if (success) alert('Workspace exportado com sucesso!');
+                        else alert('Exportação cancelada ou falhou.');
+                    });
+                },
+                async importWorkspace() {
+                    const imported = await window.electronAPI.importWorkspace();
+                    if (imported) {
+                        this.workspaces.push(imported);
+                        this.saveWorkspaces();
+                        alert('Workspace importado com sucesso!');
+                    } else {
+                        alert('Falha ao importar: o arquivo pode estar corrompido ou com estrutura inválida.');
+                    }
+                },
+                openEditModal(index) {
+                    this.editWorkspaceIndex = index;
+                    this.editWorkspaceName = this.workspaces[index].name;
+                    this.showEditModal = true;
+                },
+                confirmEditWorkspace() {
+                    if (this.canEditWorkspace) {
+                        this.workspaces[this.editWorkspaceIndex].name = this.editWorkspaceName.trim();
+                        this.saveWorkspaces();
+                        this.showEditModal = false;
+                        this.editWorkspaceIndex = null;
+                        this.editWorkspaceName = '';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

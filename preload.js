@@ -8,5 +8,7 @@ contextBridge.exposeInMainWorld('electron', {
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    getAppVersion: () => ipcRenderer.invoke('get-app-version')
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    exportWorkspace: (workspace) => ipcRenderer.invoke('export-workspace', workspace),
+    importWorkspace: () => ipcRenderer.invoke('import-workspace'),
 });

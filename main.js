@@ -1,10 +1,11 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
 const path = require('path');
 const childProcess = require('child_process');
 const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const { Base } = require('./base');
 const packageJson = require('./package.json');
+const os = require('os');
 
 let busyWindow;
 let electronProcess;
@@ -19,58 +20,89 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js')
         }
     });
-    mainWindow.loadFile('index.html');
-    const template = [
-        {
-            label: 'Principal',
-            submenu: [
-                {
-                    label: 'Fechar',
-                    accelerator: 'Ctrl+Q',
-                    click: () => {
-                        app.quit();
-                    }
-                }
-            ]
-        },
-        {
-            label: 'Opções',
-            submenu: [
-                {
-                    label: 'Recarregar',
-                    accelerator: 'Ctrl+R',
-                    click: () => {
-                        mainWindow.reload();
-                    }
-                },
-                {
-                    label: 'Forçar Recarregamento',
-                    accelerator: 'Shift+Ctrl+R',
-                    click: () => {
-                        mainWindow.webContents.reloadIgnoringCache();
-                    }
-                },
-                { type: 'separator' },
-                {
-                    label: 'Alternar Developer Tools',
-                    accelerator: 'Ctrl+Shift+I',
-                    click: () => {
-                        mainWindow.webContents.toggleDevTools();
-                    }
-                },
-                {
-                    label: 'Alternar Developer Tools (F12)',
-                    accelerator: 'F12',
-                    click: () => {
-                        mainWindow.webContents.toggleDevTools();
-                    }
-                }
-            ]
-        }
-    ];
+    mainWindow.loadFile('workspaces.html');
+    mainWindow.webContents.on('did-finish-load', () => {
+        const currentURL = mainWindow.webContents.getURL();
+        const isWorkspacePage = currentURL.endsWith('workspaces.html');
 
-    const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
+        const template = [
+            {
+                label: 'TestTask',
+                submenu: [
+                    {
+                        label: 'Fechar',
+                        accelerator: 'Ctrl+Q',
+                        click: () => app.quit()
+                    }
+                ]
+            },
+            {
+                label: 'Opções',
+                submenu: [
+                    {
+                        label: 'Recarregar',
+                        accelerator: 'Ctrl+R',
+                        click: () => mainWindow.reload()
+                    },
+                    {
+                        label: 'Forçar Recarregamento',
+                        accelerator: 'Shift+Ctrl+R',
+                        click: () => mainWindow.webContents.reloadIgnoringCache()
+                    },
+                    {
+                        label: 'Limpar Sessão',
+                        enabled: isWorkspacePage,
+                        click: async () => {
+                            const { response } = await dialog.showMessageBox(mainWindow, {
+                                type: 'warning',
+                                buttons: ['Cancelar', 'Confirmar'],
+                                defaultId: 0,
+                                cancelId: 0,
+                                title: 'Confirmar',
+                                message: 'Deseja realmente limpar a sessão? Isso removerá todos os dados armazenados localmente.'
+                            });
+                            if (response === 1) {
+                                mainWindow.webContents.executeJavaScript('localStorage.clear(); location.reload();');
+                            }
+                        }
+                    },
+                    { type: 'separator' },
+                    {
+                        label: 'Alternar Developer Tools',
+                        accelerator: 'Ctrl+Shift+I',
+                        click: () => mainWindow.webContents.toggleDevTools()
+                    },
+                    {
+                        label: 'Alternar Developer Tools (F12)',
+                        accelerator: 'F12',
+                        click: () => mainWindow.webContents.toggleDevTools()
+                    }
+                ]
+            },
+            {
+                label: 'Exemplos de workspaces',
+                submenu: [
+                    {
+                        label: 'Importar Exemplo 1',
+                        enabled: isWorkspacePage,
+                        click: () => console.log('Exemplo 1 selecionado')
+                    },
+                    {
+                        label: 'Importar Exemplo 2',
+                        enabled: isWorkspacePage,
+                        click: () => console.log('Exemplo 2 selecionado')
+                    }
+                ]
+            },
+            {
+                label: 'Sobre',
+                click: () => createAboutWindow()
+            }
+        ];
+
+        const menu = Menu.buildFromTemplate(template);
+        Menu.setApplicationMenu(menu);
+    });
 }
 
 function createBusyWindow() {
@@ -231,6 +263,46 @@ ipcMain.on('about', async (event) => {
 
 ipcMain.handle('get-app-version', () => {
     return packageJson.version;
+});
+
+ipcMain.handle('export-workspace', async (event, workspace) => {
+    const downloadsPath = path.join(os.homedir(), 'Downloads');
+    const defaultPath = path.join(downloadsPath, `${workspace.name}.json`);
+
+    const { filePath, canceled } = await dialog.showSaveDialog({
+        title: 'Exportar Workspace',
+        defaultPath,
+        filters: [{ name: 'JSON Files', extensions: ['json'] }]
+    });
+
+    if (!canceled && filePath) {
+        fs.writeFileSync(filePath, JSON.stringify(workspace, null, 2));
+        return true;
+    }
+    return false;
+});
+
+ipcMain.handle('import-workspace', async () => {
+    const downloadsPath = path.join(os.homedir(), 'Downloads');
+
+    const { filePaths, canceled } = await dialog.showOpenDialog({
+        title: 'Importar Workspace',
+        defaultPath: downloadsPath,
+        filters: [{ name: 'JSON Files', extensions: ['json'] }],
+        properties: ['openFile']
+    });
+
+    if (!canceled && filePaths.length > 0) {
+        const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
+        try {
+            const json = JSON.parse(fileContent);
+            const isValid = json.name && json.version && json.testType && json.test?.actions && typeof json.test.url === 'string';
+            return isValid ? json : null;
+        } catch (e) {
+            return null;
+        }
+    }
+    return null;
 });
 
 app.whenReady().then(() => {
