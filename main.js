@@ -12,7 +12,7 @@ let electronProcess;
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 1200,
+        width: 1280,
         height: 720,
         webPreferences: {
             nodeIntegration: false,
@@ -102,7 +102,7 @@ function createWindow() {
 
 function createBusyWindow() {
     busyWindow = new BrowserWindow({
-        width: 1200,
+        width: 1280,
         height: 720,
         webPreferences: {
             nodeIntegration: false,
@@ -154,6 +154,22 @@ function createAboutWindow() {
     win.loadFile('about.html');
 }
 
+function createConfigWindow() {
+    const win = new BrowserWindow({
+        width: 1280,
+        height: 720,
+        resizable: false,
+        maximizable: false,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js')
+        }
+    });
+    win.setMenu(null);
+    win.loadFile('config.html');
+}
+
 ipcMain.on('start-puppeteer', async (event, { test }) => {
     console.log('Iniciando automação no Puppeteer!');
     console.log(test);
@@ -192,7 +208,7 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
     const pages = await browser.pages();
     const page = pages[0];
     const base = new Base(page);
-    const startTime = Date.now();
+    // const startTime = Date.now();
     const lastTest = {
         tests: [],
         totalTime: 0,
@@ -207,29 +223,34 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
             if (Boolean(action.disabled)) {
                 continue;
             }
-            const selector = action.selector.startsWith('//') || action.selector.startsWith('(')
-                ? `::-p-xpath(${action.selector})`
-                : action.selector;
 
             switch (action.type) {
                 case 'type':
-                    await base.type(selector, action.text);
+                    result = await base.type(action.selector, action.text);
+                    lastTest.tests.push(result);
                     break;
                 case 'fill':
-                    await base.fill(selector, action.text);
+                    result = await base.fill(action.selector, action.text);
+                    lastTest.tests.push(result);
                     break;
                 case 'click':
-                    await base.click(selector);
+                    result = await base.click(action.selector);
+                    lastTest.tests.push(result);
                     break;
                 case 'enter':
-                    await base.enter();
+                    result = await base.enter();
+                    lastTest.tests.push(result);
                     break;
                 case 'navigate':
-                    await base.goto(action.selector);
+                    result = await base.goto(action.selector);
+                    lastTest.tests.push(result);
                     break;
                 case 'assertText':
-                    await base.assertText(selector, action.text);
+                    result = await base.assertText(action.selector, action.text);
+                    lastTest.tests.push(result);
                     break;
+                default:
+                    throw new Error('Nenhuma ação foi encontrada');
             }
         }
 
@@ -247,8 +268,11 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
         if (electronProcess) {
             electronProcess.kill();
         }
-        const endTime = Date.now();
-        const executionTime = endTime - startTime;
+        // const endTime = Date.now();
+        // const executionTime = endTime - startTime;
+        const executionTime = lastTest.tests.reduce((sum, current) => {
+            return sum + (current.executionTime || 0);
+        }, 0);
         lastTest.totalTime = executionTime;
         console.log(`O teste levou ${executionTime} ms para executar.`);
         event.sender.send('enable-start-button');
@@ -261,6 +285,10 @@ ipcMain.on('about', async (event) => {
     //if (busyWindow) {
     //    busyWindow.close();
     //}
+});
+
+ipcMain.on('config', async (event) => {
+    createConfigWindow();
 });
 
 ipcMain.handle('get-app-version', () => {

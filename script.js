@@ -111,7 +111,7 @@ new Vue({
             this.testNotification = false;
             this.testFail = '';
             this.removeLastTest();
-            window.electron.ipcRenderer.send('start-puppeteer', { test: this.workspace.test, version: this.workspace.version });
+            window.electron.ipcRenderer.send('start-puppeteer', { test: this.workspace.test, config: null });
         },
         showAbout() {
             window.electron.ipcRenderer.send('about');
@@ -217,7 +217,7 @@ new Vue({
             window.location.href = 'workspaces.html';
         },
         openTestConfig() {
-            alert('Função não implementada');
+            window.electron.ipcRenderer.send('config');
         },
         saveLastTest(lastTest) {
             this.totalTime = this.formatExecutionTime(lastTest.totalTime);
@@ -234,6 +234,9 @@ new Vue({
         formatExecutionTime(ms) {
             const seconds = ms / 1000;
             return `${seconds.toFixed(2)}s`;
+        },
+        openLastTestReport() {
+            alert('Função não implementada');
         }
     },
     beforeDestroy() {

@@ -19,7 +19,7 @@ export class Base {
     async goto(url) {
         const startTime = Date.now();
         let executionTime = 0;
-        const text = `Navegação para ${url}`;
+        const description = `Navegação para ${url}`;
         let success = null;
         let fail = null;
         try {
@@ -38,69 +38,172 @@ export class Base {
             const endTime = Date.now();
             executionTime = endTime - startTime;
         }
-        return { executionTime, text, success, fail }
+        return { executionTime, description, success, fail }
     }
 
     async click(selector) {
-        await this.waitForSelector(selector);
-        await this.page.click(selector);
-        console.log('Click realizado com sucesso!');
-    }
-
-    async clickByXpath(selector) {
-        await this.waitForSelector(selector);
-        await this.page.click(`::-p-xpath(${selector})`);
-        console.log('Click realizado com sucesso!');
-    }
-
-    async type(selector, text) {
-        await this.waitForSelector(selector);
-        await this.page.type(selector, text);
-        console.log('Digitação realizada com sucesso!');
-    }
-
-    async typeByXpath(selector) {
-        await this.waitForSelector(selector);
-        await this.page.type(`::-p-xpath(${selector})`, text);
-        console.log('Digitação realizada com sucesso!');
-    }
-
-    async fill(selector, text) {
-        await this.waitForSelector(selector);
-        const locator = this.page.locator(selector);
-        await locator.fill(text);
-        console.log('Preenchimento realizado com sucesso!');
-    }
-
-    async screenshot() {
-        await this.page.screenshot({ path: 'screenshot.png', fullPage: true });
-        console.log('Screenshot tirada com sucesso!');
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Click no seletor ${selector}`;
+        let success = null;
+        let fail = null;
+        try {
+            selector = this.getSelectorWithXpath(selector);
+            await this.waitForSelector(selector);
+            await this.page.click(selector);
+            success = 'Click realizado com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao clicar: ${err}`;
+            console.error(fail);
+            throw fail;
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+        }
+        return { executionTime, description, success, fail }
     }
 
     async waitForSelector(selector) {
-        const element = await this.page.waitForSelector(selector, { visible: true });
-        console.log('Seletor encontrado com sucesso!');
-        return element;
-    }
-
-    async getText(selector) {
-        const element = await this.waitForSelector(selector);
-        console.log('Texto encontrado com sucesso!');
-        return this.page.evaluate(el => el.textContent, element);
-    }
-
-    async assertText(selector, expectedText) {
-        const actualText = await this.getText(selector);
-        if (actualText.trim() !== expectedText) {
-            throw new Error(`Falha na asserção: esperado "${expectedText}", mas recebido "${actualText}"`);
-        } else {
-            console.log(`Asserção bem-sucedida: "${actualText}" corresponde a "${expectedText}"`);
+        try {
+            const element = await this.page.waitForSelector(selector, { visible: true });
+            console.log('Seletor encontrado com sucesso!');
+            return element;
+        } catch (err) {
+            throw err;
         }
     }
 
+    async clickByXpath(selector) {
+        try {
+            await this.waitForSelector(selector);
+            await this.page.click(`::-p-xpath(${selector})`);
+            console.log('Click realizado com sucesso!');
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async type(selector, text) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Digitar no seletor ${selector} com texto ${text}`;
+        let success = null;
+        let fail = null;
+        try {
+            selector = this.getSelectorWithXpath(selector);
+            await this.waitForSelector(selector);
+            await this.page.type(selector, text);
+            success = 'Digitação realizada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao digitar: ${err}`;
+            console.error(fail);
+            throw fail;
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+        }
+        return { executionTime, description, success, fail }
+    }
+
+    async typeByXpath(selector) {
+        try {
+            await this.waitForSelector(selector);
+            await this.page.type(`::-p-xpath(${selector})`, text);
+            console.log('Digitação realizada com sucesso!');
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async fill(selector, text) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Preencher no seletor ${selector} com texto ${text}`;
+        let success = null;
+        let fail = null;
+        try {
+            selector = this.getSelectorWithXpath(selector);
+            await this.waitForSelector(selector);
+            const locator = this.page.locator(selector);
+            await locator.fill(text);
+            success = 'Preenchimento realizado com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao preencher: ${err}`;
+            console.error(fail);
+            throw fail;
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+        }
+        return { executionTime, description, success, fail }
+    }
+
+    async screenshot(screenshotName = 'screenshot') {
+        try {
+            await this.page.screenshot({ path: `${screenshotName}.png`, fullPage: true });
+            console.log('Screenshot tirada com sucesso!');
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async getText(selector) {
+        try {
+            const element = await this.waitForSelector(selector);
+            console.log('Texto encontrado com sucesso!');
+            return this.page.evaluate(el => el.textContent, element);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async assertText(selector, expectedText) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Validar texto no seletor ${selector} com texto ${expectedText}`;
+        let success = null;
+        let fail = null;
+        try {
+            selector = this.getSelectorWithXpath(selector);
+            const actualText = await this.getText(selector);
+            if (actualText.trim() !== expectedText) {
+                throw new Error(`Falha na asserção: esperado "${expectedText}", mas recebido "${actualText}"`);
+            }
+            success = `Asserção bem-sucedida: "${actualText}" corresponde a "${expectedText}"`;
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao validar texto: ${err}`;
+            console.error(fail);
+            throw fail;
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+        }
+        return { executionTime, description, success, fail }
+    }
+
     async enter() {
-        await this.page.keyboard.press('Enter');
-        console.log('Tecla enter pressionada com sucesso!');
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = 'Pressionando a tecla Enter';
+        let success = null;
+        let fail = null;
+        try {
+            await this.page.keyboard.press('Enter');
+            success = 'Tecla enter pressionada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao teclar Enter: ${err}`;
+            console.error(fail);
+            throw fail;
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+        }
+        return { executionTime, description, success, fail }
     }
 
     async checkUrl(url) {
@@ -111,5 +214,12 @@ export class Base {
             console.error(`Erro ao verificar a URL ${url}:`, err);
             return false;
         }
+    }
+
+    getSelectorWithXpath(originalSelector) {
+        const selector = originalSelector.startsWith('//') || originalSelector.startsWith('(')
+            ? `::-p-xpath(${originalSelector})`
+            : originalSelector;
+        return selector;
     }
 }
