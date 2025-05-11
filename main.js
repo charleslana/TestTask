@@ -20,6 +20,7 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js')
         }
     });
+    attachLoadErrorHandler(mainWindow);
     mainWindow.loadFile('workspaces.html');
     mainWindow.webContents.on('did-finish-load', () => {
         const currentURL = mainWindow.webContents.getURL();
@@ -29,6 +30,16 @@ function createWindow() {
             {
                 label: 'TestTask',
                 submenu: [
+                    {
+                        label: 'Voltar ao início',
+                        accelerator: 'CmdOrCtrl+Shift+S',
+                        click: () => {
+                            mainWindow.loadFile('workspaces.html');
+                        }
+                    },
+                    {
+                        type: 'separator'
+                    },
                     {
                         label: 'Fechar',
                         accelerator: 'Ctrl+Q',
@@ -59,7 +70,7 @@ function createWindow() {
                                 defaultId: 0,
                                 cancelId: 0,
                                 title: 'Confirmar',
-                                message: 'Deseja realmente limpar a sessão? Isso removerá todos os dados armazenados localmente.'
+                                message: 'Deseja realmente limpar a sessão? Isso removerá todos os workspaces listados'
                             });
                             if (response === 1) {
                                 mainWindow.webContents.executeJavaScript('localStorage.clear(); location.reload();');
@@ -91,10 +102,14 @@ function createWindow() {
             },
             {
                 label: 'Sobre',
-                click: () => createAboutWindow()
+                submenu: [
+                    {
+                        label: 'Ver Informações',
+                        click: () => createAboutWindow()
+                    }
+                ]
             }
         ];
-
         const menu = Menu.buildFromTemplate(template);
         Menu.setApplicationMenu(menu);
     });
@@ -168,6 +183,13 @@ function createConfigWindow() {
     });
     win.setMenu(null);
     win.loadFile('config.html');
+}
+
+function attachLoadErrorHandler(win) {
+    win.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+        console.error(`[Erro] ${validatedURL} falhou: ${errorDescription}`);
+        win.webContents.executeJavaScript(`alert("Erro ao carregar a página: ${errorDescription} : ${validatedURL}");`);
+    });
 }
 
 ipcMain.on('start-puppeteer', async (event, { test }) => {

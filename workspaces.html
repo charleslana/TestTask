@@ -33,6 +33,7 @@
                     <div class="buttons">
                         <button class="button is-success" @click="openWorkspace(index)">Abrir</button>
                         <button class="button is-warning" @click="exportWorkspace(index)">Exportar</button>
+                        <button class="button is-info" @click="duplicateWorkspace(index)">Duplicar</button>
                         <button class="button is-danger" @click="deleteWorkspace(index)">Excluir</button>
                     </div>
                 </div>
@@ -168,7 +169,8 @@
                 },
                 openWorkspace(index) {
                     localStorage.setItem('selectedWorkspaceIndex', index);
-                    window.location.href = 'index.html';
+                    const type = this.workspaces[index].testType;
+                    window.location.href = type === 'e2e' ? 'index.html' : 'api.html';
                 },
                 saveWorkspaces() {
                     localStorage.setItem('workspaces', JSON.stringify(this.workspaces));
@@ -203,6 +205,13 @@
                         this.editWorkspaceIndex = null;
                         this.editWorkspaceName = '';
                     }
+                },
+                duplicateWorkspace(index) {
+                    const original = this.workspaces[index];
+                    const copy = JSON.parse(JSON.stringify(original));
+                    copy.name = `${original.name} (Cópia)`;
+                    this.workspaces.push(copy);
+                    this.saveWorkspaces();
                 }
             }
         });
