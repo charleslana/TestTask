@@ -14,6 +14,7 @@ export class Base {
 
     defaultTimeout = 10000;
     navigateTimeout = 15000;
+    navigateWaitUntil = 'domcontentloaded';
 
     async goto(url) {
         const startTime = Date.now();
@@ -26,7 +27,7 @@ export class Base {
             if (!isUrlAccessible) {
                 throw new Error(`Falha ao acessar a URL: ${url}`);
             }
-            await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: this.navigateTimeout });
+            await this.page.goto(url, { waitUntil: this.navigateWaitUntil, timeout: this.navigateTimeout });
             success = 'Navegação realizada com sucesso!';
             console.log(success);
         } catch (err) {
