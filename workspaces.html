@@ -52,8 +52,8 @@
                     <div class="field">
                         <label class="label">Nome do Workspace</label>
                         <div class="control">
-                            <input class="input" type="text" v-model.trim="newWorkspaceName" required maxlength="50"
-                                placeholder="Ex: Meu Projeto" required />
+                            <input class="input is-shadowless" type="text" v-model.trim="newWorkspaceName" required
+                                maxlength="50" placeholder="Ex: Meu Projeto" required />
                         </div>
                     </div>
                     <div class="field mt-4">
@@ -89,19 +89,20 @@
                     <div class="field">
                         <label class="label">Nome do Workspace</label>
                         <div class="control">
-                            <input class="input" type="text" v-model.trim="editWorkspaceName" required maxlength="50"
-                                placeholder="Novo nome do workspace" required />
+                            <input class="input is-shadowless" type="text" v-model.trim="editWorkspaceName" required
+                                maxlength="50" placeholder="Novo nome do workspace" required />
                         </div>
                     </div>
 
                     <div class="field mt-4">
                         <label class="label">Versão</label>
-                        <input class="input" type="text" :value="workspaces[editWorkspaceIndex]?.version" disabled />
+                        <input class="input is-shadowless" type="text" :value="workspaces[editWorkspaceIndex]?.version"
+                            disabled />
                     </div>
 
                     <div class="field mt-4">
                         <label class="label">Tipo de Teste</label>
-                        <input class="input" type="text"
+                        <input class="input is-shadowless" type="text"
                             :value="workspaces[editWorkspaceIndex]?.testType === 'e2e' ? 'Testes E2E' : 'Testes API'"
                             disabled />
                     </div>

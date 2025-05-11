@@ -75,7 +75,7 @@
                                     <p class="card-header-title">
                                         {{ actions.find(a => a.type === action.type)?.name || action.type }}
                                     </p>
-                                    <div class="card-header-icon">
+                                    <div class="card-header-icon" style="cursor: move;">
                                         <label class="checkbox is-clickable">
                                             <input type="checkbox" :checked="!action.disabled"
                                                 @change="action.disabled = !$event.target.checked">
