@@ -6,15 +6,38 @@
 export class Base {
     constructor(page) {
         this.page = page;
-        this.page.setDefaultTimeout(10000);
+        this.page.setDefaultTimeout(this.defaultTimeout);
     }
 
     /** @type {Page} */
     page;
 
+    defaultTimeout = 10000;
+    navigateTimeout = 15000;
+
     async goto(url) {
-        await this.page.goto(url);
-        console.log('Navegação realizada com sucesso!');
+        const startTime = Date.now();
+        let executionTime = 0;
+        const text = `Navegação para ${url}`;
+        let success = null;
+        let fail = null;
+        try {
+            const isUrlAccessible = await this.checkUrl(url);
+            if (!isUrlAccessible) {
+                throw new Error(`Falha ao acessar a URL: ${url}`);
+            }
+            await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: this.navigateTimeout });
+            success = 'Navegação realizada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro na navegação: ${err}`;
+            console.error(fail);
+            throw fail;
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+        }
+        return { executionTime, text, success, fail }
     }
 
     async click(selector) {
@@ -77,5 +100,15 @@ export class Base {
     async enter() {
         await this.page.keyboard.press('Enter');
         console.log('Tecla enter pressionada com sucesso!');
+    }
+
+    async checkUrl(url) {
+        try {
+            const response = await fetch(url);
+            return response.status === 200;
+        } catch (err) {
+            console.error(`Erro ao verificar a URL ${url}:`, err);
+            return false;
+        }
     }
 }

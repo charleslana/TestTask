@@ -25,6 +25,7 @@
             <div id="navbarBasicExample" class="navbar-menu">
                 <div class="navbar-start">
                     <a class="navbar-item" @click="removeSelectedWorkspace">Voltar para Workspaces</a>
+                    <a class="navbar-item">Relatório do último teste</a>
                 </div>
 
                 <div class="navbar-end">
@@ -109,10 +110,10 @@
                             </div>
                             <div class="message-body">
                                 <p class="has-text-weight-bold mb-2" v-if="testFail">O teste falhou!<br />Duração:
-                                    0.00<br />{{testFail}}
+                                    {{ totalTime }}<br />{{testFail}}
                                 </p>
                                 <p class="has-text-weight-bold mb-2" v-else>O Teste foi executado com
-                                    sucesso!<br />Duração: 0.00</p>
+                                    sucesso!<br />Duração: {{ totalTime }}</p>
                                 <button class="button" :class="testFail ? 'is-danger' : 'is-success'">Ver
                                     resultados</button>
                             </div>

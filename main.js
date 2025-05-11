@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog, globalShortcut } = require('electron');
 const path = require('path');
 const childProcess = require('child_process');
 const puppeteer = require('puppeteer-core');
@@ -70,11 +70,6 @@ function createWindow() {
                     {
                         label: 'Alternar Developer Tools',
                         accelerator: 'Ctrl+Shift+I',
-                        click: () => mainWindow.webContents.toggleDevTools()
-                    },
-                    {
-                        label: 'Alternar Developer Tools (F12)',
-                        accelerator: 'F12',
                         click: () => mainWindow.webContents.toggleDevTools()
                     }
                 ]
@@ -198,15 +193,21 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
     const page = pages[0];
     const base = new Base(page);
     const startTime = Date.now();
+    const lastTest = {
+        tests: [],
+        totalTime: 0,
+    };
+    let result;
 
     try {
-        await base.goto(test.url); //https://front.serverest.dev
+        result = await base.goto(test.url); //https://front.serverest.dev
+        lastTest.tests.push(result);
 
         for (const action of test.actions) {
             if (Boolean(action.disabled)) {
                 continue;
             }
-            const selector = action.selector.trim().startsWith('//')
+            const selector = action.selector.startsWith('//') || action.selector.startsWith('(')
                 ? `::-p-xpath(${action.selector})`
                 : action.selector;
 
@@ -246,11 +247,12 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
         if (electronProcess) {
             electronProcess.kill();
         }
-        event.sender.send('enable-start-button');
-        event.sender.send('test-completed');
         const endTime = Date.now();
         const executionTime = endTime - startTime;
+        lastTest.totalTime = executionTime;
         console.log(`O teste levou ${executionTime} ms para executar.`);
+        event.sender.send('enable-start-button');
+        event.sender.send('test-completed', lastTest);
     }
 });
 
@@ -306,6 +308,19 @@ ipcMain.handle('import-workspace', async () => {
 });
 
 app.whenReady().then(() => {
+    globalShortcut.register('F12', () => {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        if (focusedWindow) {
+            focusedWindow.webContents.toggleDevTools();
+        }
+    });
+
+    globalShortcut.register('Ctrl+Shift+I', () => {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        if (focusedWindow) {
+            focusedWindow.webContents.toggleDevTools();
+        }
+    });
     if (process.env.ELECTRON_START === 'puppeteer') {
         createBusyWindow();
     } else {

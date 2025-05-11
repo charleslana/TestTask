@@ -38,7 +38,8 @@ new Vue({
         },
         editIndex: null,
         modalDeleteConfirm: false,
-        deleteIndex: null
+        deleteIndex: null,
+        totalTime: 0,
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {
@@ -47,18 +48,13 @@ new Vue({
         window.electron.ipcRenderer.on('test-failed', (message) => {
             this.testFail = message;
         });
-        window.electron.ipcRenderer.on('test-completed', () => {
+        window.electron.ipcRenderer.on('test-completed', (lastTest) => {
+            this.saveLastTest(lastTest);
             this.testNotification = true;
         });
         this.recoveryTest();
     },
     watch: {
-        // test: {
-        //     handler(newValue) {
-        //         localStorage.setItem('test', JSON.stringify(newValue));
-        //     },
-        //     deep: true
-        // },
         'workspace.test': {
             handler(newTest) {
                 if (this.selectedWorkspaceIndex !== null) {
@@ -114,6 +110,7 @@ new Vue({
             this.isDisabled = true;
             this.testNotification = false;
             this.testFail = '';
+            this.removeLastTest();
             window.electron.ipcRenderer.send('start-puppeteer', { test: this.workspace.test, version: this.workspace.version });
         },
         showAbout() {
@@ -127,10 +124,6 @@ new Vue({
             this.testNotification = false;
         },
         recoveryTest() {
-            // const test = localStorage.getItem('test');
-            // if (test) {
-            //     this.test = JSON.parse(test);
-            // }
             const index = localStorage.getItem('selectedWorkspaceIndex');
             if (index !== null) {
                 this.selectedWorkspaceIndex = parseInt(index);
@@ -225,6 +218,22 @@ new Vue({
         },
         openTestConfig() {
             alert('Função não implementada');
+        },
+        saveLastTest(lastTest) {
+            this.totalTime = this.formatExecutionTime(lastTest.totalTime);
+            localStorage.setItem('lastTest', JSON.stringify(lastTest));
+        },
+        getLastTest() {
+            const lastTest = JSON.parse(localStorage.getItem('lastTest') || '[]');
+            return lastTest;
+        },
+        removeLastTest() {
+            this.totalTime = 0;
+            localStorage.removeItem('lastTest');
+        },
+        formatExecutionTime(ms) {
+            const seconds = ms / 1000;
+            return `${seconds.toFixed(2)}s`;
         }
     },
     beforeDestroy() {
