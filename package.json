@@ -45,7 +45,7 @@
           ]
         }
       ],
-      "icon": "build/icon.png",
+      "icon": "public/icon.png",
       "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
       "extraResources": [
         {
@@ -70,7 +70,7 @@
         "rpm",
         "snap"
       ],
-      "icon": "build/icon.png",
+      "icon": "public/icon.png",
       "artifactName": "${productName}-Linux-${version}.${ext}",
       "extraResources": [
         {
