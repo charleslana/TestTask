@@ -15,6 +15,7 @@ export class Base {
     defaultTimeout = 10000;
     navigateTimeout = 15000;
     navigateWaitUntil = 'domcontentloaded';
+    selectedScreenshot = 'everyScreenshot';
 
     async goto(url) {
         const startTime = Date.now();
@@ -145,6 +146,16 @@ export class Base {
         try {
             await this.page.screenshot({ path: `${screenshotName}.png`, fullPage: true });
             console.log('Screenshot tirada com sucesso!');
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async screenshotWithBase64() {
+        try {
+            const screenshotBase64 = await this.page.screenshot({ encoding: 'base64', fullPage: true });
+            console.log('Screenshot base64 tirada com sucesso!');
+            return `data:image/png;base64,${screenshotBase64}`;
         } catch (err) {
             throw err;
         }

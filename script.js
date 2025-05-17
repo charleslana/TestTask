@@ -106,12 +106,21 @@ new Vue({
         }
     },
     methods: {
+        getConfig() {
+            const configStr = localStorage.getItem('confige2e');
+            try {
+                return JSON.parse(configStr);
+            } catch (e) {
+                console.error('Config inválido:', e);
+                return {};
+            }
+        },
         startTest() {
             this.isDisabled = true;
             this.testNotification = false;
             this.testFail = '';
             this.removeLastTest();
-            window.electron.ipcRenderer.send('start-puppeteer', { test: this.workspace.test, config: null });
+            window.electron.ipcRenderer.send('start-puppeteer', { test: this.workspace.test, config: this.getConfig() });
         },
         showAbout() {
             window.electron.ipcRenderer.send('about');

@@ -192,9 +192,10 @@ function attachLoadErrorHandler(win) {
     });
 }
 
-ipcMain.on('start-puppeteer', async (event, { test }) => {
+ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     console.log('Iniciando automação no Puppeteer!');
     console.log(test);
+    console.log(config);
 
     process.env.ELECTRON_START = 'puppeteer';
 
@@ -236,6 +237,18 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
         totalTime: 0,
     };
     let result;
+    let isClose = true;
+    let isLastScreenshot = false;
+
+    //configs
+    if (config) {
+        base.navigateTimeout = config.navigateTimeout;
+        base.defaultTimeout = config.defaultTimeout;
+        base.navigateWaitUntil = config.navigateWaitUntil;
+        base.selectedScreenshot = config.selectedScreenshot;
+        isClose = config.isCloseBrowser;
+        isLastScreenshot = config.selectedScreenshot === 'lastScreenshot';
+    }
 
     try {
         result = await base.goto(test.url); //https://front.serverest.dev
@@ -284,11 +297,8 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
         console.error('Erro no Puppeteer:', error);
         event.sender.send('test-failed', error);
     } finally {
-        await base.screenshot();
-        await browser.close();
-        await browser.disconnect();
-        if (electronProcess) {
-            electronProcess.kill();
+        if (isLastScreenshot) {
+            await base.screenshot();
         }
         // const endTime = Date.now();
         // const executionTime = endTime - startTime;
@@ -299,6 +309,13 @@ ipcMain.on('start-puppeteer', async (event, { test }) => {
         console.log(`O teste levou ${executionTime} ms para executar.`);
         event.sender.send('enable-start-button');
         event.sender.send('test-completed', lastTest);
+        if (isClose) {
+            await browser.close();
+            await browser.disconnect();
+            if (electronProcess) {
+                electronProcess.kill();
+            }
+        }
     }
 });
 

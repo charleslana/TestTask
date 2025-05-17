@@ -11,7 +11,71 @@
 <body>
     <div id="config">
         <div class="container">
-            <div class="is-size-3 has-text-centered my-5">Configuração</div>
+            <div class="is-size-3 has-text-centered my-5">Configuração testes E2E</div>
+
+            <div class="field">
+                <label class="label" for="custom1">Limite de tempo de navegação em ms:</label>
+                <div class="control">
+                    <input class="input" id="custom1" placeholder="ex: 15000" type="number"
+                        v-model.trim="navigateTimeout" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="custom2">Limite de tempo de encontrar elementos em ms:</label>
+                <div class="control">
+                    <input class="input" id="custom2" placeholder="ex: 15000" type="number"
+                        v-model.trim="defaultTimeout" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="custom3">Selecione tipo de espera da navegação:</label>
+                <div class="select is-fullwidth">
+                    <select v-model="navigateWaitUntil" id="custom3">
+                        <option value="domcontentloaded">Aguarda até que os elementos do DOM estejam carregados</option>
+                        <option value="load">Aguarda até que todos os dados da pagina carregue</option>
+                        <option value="networkidle0">Aguarda até que não haja mais de 0 conexões de rede por pelo menos
+                            500 ms</option>
+                        <option value="networkidle2">Aguarda até que não haja mais de 2 conexões de rede por pelo menos
+                            500 ms</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Mostrar screenshots do teste:</label>
+                <label class="radio">
+                    <input type="radio" value="everyScreenshot" v-model="selectedScreenshot" />
+                    Mostrar screenshots a cada ação de teste (considere que o tempo do teste afeta ao tirar screenshot
+                    da tela)
+                </label>
+                <br>
+                <label class="radio">
+                    <input type="radio" value="lastScreenshot" v-model="selectedScreenshot" />
+                    Mostrar screenshot no final do teste (considere que o tempo do teste afeta ao tirar screenshot da
+                    tela)
+                </label>
+                <br>
+                <label class="radio">
+                    <input type="radio" value="neverScreenshot" v-model="selectedScreenshot" />
+                    Não mostrar screenshots
+                </label>
+            </div>
+
+            <div class="field">
+                <label class="label">Configuração de fechar a janela do teste da automação:</label>
+                <label class="checkbox">
+                    <input type="checkbox" v-model="isCloseBrowser" />
+                    Fechar a janela de teste
+                </label>
+            </div>
+
+            <div class="field my-5">
+                <div class="control">
+                    <button class="button is-primary is-fullwidth" id="saveSettings">Salvar</button>
+                </div>
+            </div>
         </div>
     </div>
     <script src="vue@2.js"></script>

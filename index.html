@@ -102,6 +102,9 @@
                 <div class="column has-text-centered">
                     <button class="button is-primary is-large mb-5" @click="startTest"
                         :disabled="isDisabled || !workspace.test.url">Iniciar o teste</button>
+                    <span v-if="isDisabled">
+                        <p>Problemas no teste?</p><a href="index.html" class="link">Recarregar</a>
+                    </span>
                     <div class="is-flex is-justify-content-center" v-if="testNotification">
                         <article :class="testFail ? 'message is-danger' : 'message is-success'">
                             <div class="message-header">
