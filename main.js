@@ -235,6 +235,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     const lastTest = {
         tests: [],
         totalTime: 0,
+        lastScreenshot: null,
     };
     let result;
     let isClose = true;
@@ -298,7 +299,8 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         event.sender.send('test-failed', error);
     } finally {
         if (isLastScreenshot) {
-            await base.screenshot();
+            const lastScreenshot = await base.screenshotWithBase64();
+            lastTest.lastScreenshot = lastScreenshot;
         }
         // const endTime = Date.now();
         // const executionTime = endTime - startTime;

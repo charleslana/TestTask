@@ -23,6 +23,7 @@ export class Base {
         const description = `Navegação para ${url}`;
         let success = null;
         let fail = null;
+        let screenshot = null;
         try {
             const isUrlAccessible = await this.checkUrl(url);
             if (!isUrlAccessible) {
@@ -38,8 +39,9 @@ export class Base {
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
         }
-        return { executionTime, description, success, fail }
+        return { executionTime, description, success, fail, screenshot }
     }
 
     async click(selector) {
@@ -48,6 +50,7 @@ export class Base {
         const description = `Click no seletor ${selector}`;
         let success = null;
         let fail = null;
+        let screenshot = null;
         try {
             selector = this.getSelectorWithXpath(selector);
             await this.waitForSelector(selector);
@@ -61,8 +64,9 @@ export class Base {
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
         }
-        return { executionTime, description, success, fail }
+        return { executionTime, description, success, fail, screenshot }
     }
 
     async waitForSelector(selector) {
@@ -91,6 +95,7 @@ export class Base {
         const description = `Digitar no seletor ${selector} com texto ${text}`;
         let success = null;
         let fail = null;
+        let screenshot = null;
         try {
             selector = this.getSelectorWithXpath(selector);
             await this.waitForSelector(selector);
@@ -104,8 +109,9 @@ export class Base {
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
         }
-        return { executionTime, description, success, fail }
+        return { executionTime, description, success, fail, screenshot }
     }
 
     async typeByXpath(selector) {
@@ -124,6 +130,7 @@ export class Base {
         const description = `Preencher no seletor ${selector} com texto ${text}`;
         let success = null;
         let fail = null;
+        let screenshot = null;
         try {
             selector = this.getSelectorWithXpath(selector);
             await this.waitForSelector(selector);
@@ -138,8 +145,9 @@ export class Base {
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
         }
-        return { executionTime, description, success, fail }
+        return { executionTime, description, success, fail, screenshot }
     }
 
     async screenshot(screenshotName = 'screenshot') {
@@ -177,6 +185,7 @@ export class Base {
         const description = `Validar texto no seletor ${selector} com texto ${expectedText}`;
         let success = null;
         let fail = null;
+        let screenshot = null;
         try {
             selector = this.getSelectorWithXpath(selector);
             const actualText = await this.getText(selector);
@@ -192,8 +201,9 @@ export class Base {
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
         }
-        return { executionTime, description, success, fail }
+        return { executionTime, description, success, fail, screenshot }
     }
 
     async enter() {
@@ -202,6 +212,7 @@ export class Base {
         const description = 'Pressionando a tecla Enter';
         let success = null;
         let fail = null;
+        let screenshot = null;
         try {
             await this.page.keyboard.press('Enter');
             success = 'Tecla enter pressionada com sucesso!';
@@ -213,8 +224,9 @@ export class Base {
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
         }
-        return { executionTime, description, success, fail }
+        return { executionTime, description, success, fail, screenshot }
     }
 
     async checkUrl(url) {
@@ -232,5 +244,12 @@ export class Base {
             ? `::-p-xpath(${originalSelector})`
             : originalSelector;
         return selector;
+    }
+
+    async getScreenshot() {
+        if (this.selectedScreenshot === 'everyScreenshot') {
+            return await this.screenshotWithBase64();
+        }
+        return null;
     }
 }
