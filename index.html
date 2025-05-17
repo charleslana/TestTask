@@ -117,7 +117,8 @@
                                 </p>
                                 <p class="has-text-weight-bold mb-2" v-else>O Teste foi executado com
                                     sucesso!<br />Duração: {{ totalTime }}</p>
-                                <button class="button" :class="testFail ? 'is-danger' : 'is-success'">Ver
+                                <button class="button" :class="testFail ? 'is-danger' : 'is-success'"
+                                    @click="openLastTestReport">Ver
                                     resultados</button>
                             </div>
                         </article>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="bulma.min.css">
+    <link rel="stylesheet" href="bulma-timeline.min.css">
+    <link rel="stylesheet" href="modal-fx.min.css">
+</head>
+
+<body>
+    <div id="report">
+        <div class="container">
+            <div class="is-size-3 has-text-centered my-5">Relatório</div>
+
+            <!-- Timeline começa aqui -->
+            <div class="timeline my-5" v-if="lastTest.tests && lastTest.tests.length">
+                <header class="timeline-header">
+                    <span class="tag is-medium is-link is-light">Início</span>
+                </header>
+
+                <div v-for="(result, index) in lastTest.tests" :key="index">
+                    <div class="timeline-item">
+                        <div class="timeline-marker is-link is-icon">
+                            <span class="icon">{{ result.fail ? '❌' : '✅' }}</span>
+                        </div>
+                        <div class="timeline-content">
+                            <p class="heading" :class="{
+                  'has-text-danger': result.fail,
+                  'has-text-success': !result.fail,
+                }">
+                                {{ result.description }}
+                                <span>
+                                    {{ result.fail ? '❌' : '✅' }}
+                                </span>
+                            </p>
+                            <p v-html="formatBreakLines(result.fail ? ((result.success || '') + '\n' + result.fail) : (result.success || ''))"
+                                :class="{
+                                    'has-text-danger': result.fail,
+                                    'has-text-success': !result.fail,
+                                }"></p>
+                        </div>
+
+                        <div class="timeline-content" v-if="result.screenshot">
+                            <figure class="image is-128x128">
+                                <img :src="result.screenshot" alt="Screenshot" class="is-clickable"
+                                    @click="changeScreenshot(result.screenshot)" />
+                            </figure>
+                        </div>
+                    </div>
+
+                    <header class="timeline-header" v-if="result.executionTime">
+                        <span class="tag is-info">{{ (result.executionTime / 1000).toFixed(2) }}s</span>
+                    </header>
+                </div>
+
+                <header class="timeline-header">
+                    <span class="tag is-warning">{{ totalDuration.toFixed(2) }}s</span>
+                </header>
+
+                <!-- Última screenshot geral -->
+                <div class="timeline-item" v-if="lastTest.lastScreenshot">
+                    <div class="timeline-marker is-link is-icon">
+                        <span class="icon">📸</span>
+                    </div>
+                    <div class="timeline-content">
+                        <p class="heading">Última captura de tela</p>
+                        <figure class="image is-128x128">
+                            <img :src="lastTest.lastScreenshot" alt="Última Screenshot" class="is-clickable"
+                                @click="changeScreenshot(lastTest.lastScreenshot)" />
+                        </figure>
+                    </div>
+                </div>
+
+                <header class="timeline-header">
+                    <span class="tag is-medium is-link is-light">Fim</span>
+                </header>
+            </div>
+            <!-- Timeline termina aqui -->
+        </div>
+
+        <!-- MODAL de Imagem em tela cheia -->
+        <div class="modal modal-fx-superScaled" :class="{ 'is-active': showModal }">
+            <div class="modal-background" @click="closeModal"></div>
+            <div class="modal-content is-huge is-image">
+                <img :src="selectedScreenshot" alt="Screenshot grande">
+            </div>
+            <button class="modal-close is-large" aria-label="close" @click="closeModal"></button>
+        </div>
+        <!-- FIM DA MODAL -->
+    </div>
+    <script src="vue@2.js"></script>
+    <script src="report.js"></script>
+</body>
+
+</html>

@@ -35,7 +35,6 @@ export class Base {
         } catch (err) {
             fail = `Erro na navegação: ${err}`;
             console.error(fail);
-            throw fail;
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
@@ -60,7 +59,6 @@ export class Base {
         } catch (err) {
             fail = `Erro ao clicar: ${err}`;
             console.error(fail);
-            throw fail;
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
@@ -105,7 +103,6 @@ export class Base {
         } catch (err) {
             fail = `Erro ao digitar: ${err}`;
             console.error(fail);
-            throw fail;
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
@@ -141,7 +138,6 @@ export class Base {
         } catch (err) {
             fail = `Erro ao preencher: ${err}`;
             console.error(fail);
-            throw fail;
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
@@ -197,7 +193,6 @@ export class Base {
         } catch (err) {
             fail = `Erro ao validar texto: ${err}`;
             console.error(fail);
-            throw fail;
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;
@@ -220,7 +215,6 @@ export class Base {
         } catch (err) {
             fail = `Erro ao teclar Enter: ${err}`;
             console.error(fail);
-            throw fail;
         } finally {
             const endTime = Date.now();
             executionTime = endTime - startTime;

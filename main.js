@@ -185,6 +185,20 @@ function createConfigWindow() {
     win.loadFile('config.html');
 }
 
+function createReportWindow() {
+    const win = new BrowserWindow({
+        width: 1280,
+        height: 720,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js')
+        }
+    });
+    win.setMenu(null);
+    win.loadFile('report.html');
+}
+
 function attachLoadErrorHandler(win) {
     win.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
         console.error(`[Erro] ${validatedURL} falhou: ${errorDescription}`);
@@ -245,6 +259,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     if (config) {
         base.navigateTimeout = config.navigateTimeout;
         base.defaultTimeout = config.defaultTimeout;
+        base.page.setDefaultTimeout(base.defaultTimeout);
         base.navigateWaitUntil = config.navigateWaitUntil;
         base.selectedScreenshot = config.selectedScreenshot;
         isClose = config.isCloseBrowser;
@@ -263,30 +278,31 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
             switch (action.type) {
                 case 'type':
                     result = await base.type(action.selector, action.text);
-                    lastTest.tests.push(result);
                     break;
                 case 'fill':
                     result = await base.fill(action.selector, action.text);
-                    lastTest.tests.push(result);
                     break;
                 case 'click':
                     result = await base.click(action.selector);
-                    lastTest.tests.push(result);
                     break;
                 case 'enter':
                     result = await base.enter();
-                    lastTest.tests.push(result);
                     break;
                 case 'navigate':
                     result = await base.goto(action.selector);
-                    lastTest.tests.push(result);
                     break;
                 case 'assertText':
                     result = await base.assertText(action.selector, action.text);
-                    lastTest.tests.push(result);
                     break;
                 default:
                     throw new Error('Nenhuma ação foi encontrada');
+            }
+
+            lastTest.tests.push(result);
+
+            if (result.fail) {
+                event.sender.send('test-failed', result.fail);
+                break;
             }
         }
 
@@ -330,6 +346,10 @@ ipcMain.on('about', async (event) => {
 
 ipcMain.on('config', async (event) => {
     createConfigWindow();
+});
+
+ipcMain.on('report', async (event) => {
+    createReportWindow();
 });
 
 ipcMain.handle('get-app-version', () => {

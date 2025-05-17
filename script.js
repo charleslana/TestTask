@@ -245,7 +245,7 @@ new Vue({
             return `${seconds.toFixed(2)}s`;
         },
         openLastTestReport() {
-            alert('Função não implementada');
+            window.electron.ipcRenderer.send('report');
         }
     },
     beforeDestroy() {
