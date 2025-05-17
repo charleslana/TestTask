@@ -89,14 +89,14 @@ function createWindow() {
                 label: 'Exemplos de workspaces',
                 submenu: [
                     {
-                        label: 'Importar Exemplo 1',
+                        label: 'Importar Exemplo Clique',
                         enabled: isWorkspacePage,
-                        click: () => console.log('Exemplo 1 selecionado')
+                        click: () => mainWindow.webContents.send('import-example', '1-Click')
                     },
                     {
-                        label: 'Importar Exemplo 2',
+                        label: 'Importar Exemplo Preencher',
                         enabled: isWorkspacePage,
-                        click: () => console.log('Exemplo 2 selecionado')
+                        click: () => mainWindow.webContents.send('import-example', '2-Preencher')
                     }
                 ]
             },
@@ -255,7 +255,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     let isClose = true;
     let isLastScreenshot = false;
 
-    //configs
+    // configs
     if (config) {
         base.navigateTimeout = config.navigateTimeout;
         base.defaultTimeout = config.defaultTimeout;
@@ -264,6 +264,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         base.selectedScreenshot = config.selectedScreenshot;
         isClose = config.isCloseBrowser;
         isLastScreenshot = config.selectedScreenshot === 'lastScreenshot';
+        base.fullScreenshot = config.fullScreenshot;
     }
 
     try {
@@ -350,6 +351,18 @@ ipcMain.on('config', async (event) => {
 
 ipcMain.on('report', async (event) => {
     createReportWindow();
+});
+
+ipcMain.handle('load-example', async (event, exampleName) => {
+    try {
+        const filePath = path.join(__dirname, 'examples', `${exampleName}.json`);
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        const data = JSON.parse(raw);
+        return data;
+    } catch (err) {
+        console.error('Erro ao carregar exemplo:', err);
+        return null;
+    }
 });
 
 ipcMain.handle('get-app-version', () => {

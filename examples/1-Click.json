@@ -1,0 +1,16 @@
+{
+  "name": "Exemplo Clicar",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://practice.expandtesting.com/inputs",
+    "actions": [
+      {
+        "type": "click",
+        "selector": "#btn-display-inputs",
+        "text": "",
+        "disabled": false
+      }
+    ]
+  }
+}

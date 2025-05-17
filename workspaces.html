@@ -214,6 +214,19 @@
                     this.workspaces.push(copy);
                     this.saveWorkspaces();
                 }
+            },
+            mounted() {
+                if (window.electronAPI?.onImportExample) {
+                    window.electronAPI.onImportExample((workspace) => {
+                        if (workspace) {
+                            this.workspaces.push(workspace);
+                            this.saveWorkspaces();
+                            alert('Workspace de exemplo importado com sucesso!');
+                        } else {
+                            alert('Falha ao importar exemplo.');
+                        }
+                    });
+                }
             }
         });
     </script>

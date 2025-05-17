@@ -1,5 +1,5 @@
 {
-  "name": "TestTask",
+  "name": "testtask",
   "version": "0.0.1",
   "main": "main.js",
   "scripts": {
@@ -27,6 +27,15 @@
     "appId": "com.testtask.charleslana",
     "productName": "TestTask",
     "copyright": "Copyright © 2025 ${author}",
+    "directories": {
+      "output": "release/${version}"
+    },
+    "extraResources": [
+      {
+        "from": "examples",
+        "to": "examples"
+      }
+    ],
     "win": {
       "target": [
         {

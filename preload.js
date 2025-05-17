@@ -11,4 +11,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     exportWorkspace: (workspace) => ipcRenderer.invoke('export-workspace', workspace),
     importWorkspace: () => ipcRenderer.invoke('import-workspace'),
+    loadExample: (exampleName) => ipcRenderer.invoke('load-example', exampleName),
+
+    onImportExample: (callback) => {
+        ipcRenderer.on('import-example', async (_event, exampleName) => {
+            const data = await ipcRenderer.invoke('load-example', exampleName);
+            callback(data);
+        });
+    }
 });

@@ -1,0 +1,16 @@
+{
+  "name": "Exemplo Preencher",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://practice.expandtesting.com/inputs",
+    "actions": [
+      {
+        "type": "fill",
+        "selector": "#input-text",
+        "text": "exemplo de texto",
+        "disabled": false
+      }
+    ]
+  }
+}

@@ -63,6 +63,20 @@
             </div>
 
             <div class="field">
+                <label class="label">Tipo de screenshot:</label>
+
+                <label class="radio">
+                    <input type="radio" :disabled="!isFullScreenshotEnabled" v-model="fullScreenshot" :value="false">
+                    Screenshot normal
+                </label>
+                <br>
+                <label class="radio">
+                    <input type="radio" :disabled="!isFullScreenshotEnabled" v-model="fullScreenshot" :value="true">
+                    Screenshot da tela toda
+                </label>
+            </div>
+
+            <div class="field">
                 <label class="label">Configuração de fechar a janela do teste da automação:</label>
                 <label class="checkbox">
                     <input type="checkbox" v-model="isCloseBrowser" />

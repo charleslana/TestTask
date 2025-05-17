@@ -6,6 +6,12 @@ new Vue({
         navigateWaitUntil: 'domcontentloaded',
         selectedScreenshot: 'lastScreenshot',
         isCloseBrowser: true,
+        fullScreenshot: false,
+    },
+    computed: {
+        isFullScreenshotEnabled() {
+            return this.selectedScreenshot !== 'neverScreenshot';
+        }
     },
     methods: {
         saveConfig() {
@@ -15,6 +21,7 @@ new Vue({
                 navigateWaitUntil: this.navigateWaitUntil,
                 selectedScreenshot: this.selectedScreenshot,
                 isCloseBrowser: this.isCloseBrowser,
+                fullScreenshot: this.fullScreenshot,
             };
 
             localStorage.setItem('confige2e', JSON.stringify(confige2e));
