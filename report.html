@@ -13,7 +13,19 @@
 <body>
     <div id="report">
         <div class="container">
-            <div class="is-size-3 has-text-centered my-5">Relatório</div>
+            <nav class="level my-5">
+                <!-- Left side -->
+                <div class="level-left">
+                    <div class="level-item">
+                        <p class="subtitle is-5"><strong>Relatório</strong></p>
+                    </div>
+                </div>
+
+                <!-- Right side -->
+                <div class="level-right">
+                    <p class="level-item"><a class="button is-success" @click="showExportModal = true">Exportar</a></p>
+                </div>
+            </nav>
 
             <!-- Timeline começa aqui -->
             <div class="timeline my-5" v-if="lastTest.tests && lastTest.tests.length">
@@ -90,9 +102,68 @@
             <button class="modal-close is-large" aria-label="close" @click="closeModal"></button>
         </div>
         <!-- FIM DA MODAL -->
+
+        <!-- MODAL de exportar -->
+        <div class="modal" :class="{ 'is-active': showExportModal }">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Exportar</p>
+                    <button class="delete" aria-label="close" @click="closeExportModal"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="buttons">
+                        <button class="button is-link" @click="exportPDF">Exportar como PDF</button>
+                    </div>
+                    <div v-if="showSuccessNotification" class="notification is-success mt-3">
+                        Relatório exportado com sucesso!
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button" @click="closeExportModal">Fechar</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!-- FIM DA MODAL -->
+
+        <!-- Conteúdo oculto para gerar o PDF -->
+        <div id="report-pdf" ref="pdfContent" style="display: none;" class="content">
+            <h1 class="title is-4 has-text-dark">TestTask</h1>
+            <div class="has-text-grey">Gerado em {{ new Date().toLocaleString('pt-BR') }}</div>
+            <p class="has-text-grey-dark my-5">O teste durou: {{ totalDuration.toFixed(2) }}s</p>
+
+            <table class="table is-bordered is-fullwidth is-striped">
+                <thead>
+                    <tr>
+                        <th>Ação</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Tempo (s)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(result, index) in lastTest.tests" :key="'pdf-'+index">
+                        <td>{{ translateActionType(result.actionType) }}</td>
+                        <td>{{ result.description }}</td>
+                        <td :style="{ color: result.fail ? 'red' : 'green' }">
+                            {{ result.fail ? '❌ ' + result.fail : '✅ Passou' }}
+                        </td>
+                        <td>{{ (result.executionTime / 1000).toFixed(2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 1rem;">
+                <div class="has-text-grey"></div>
+                <div><!-- Paginação automática do html2pdf --></div>
+            </div>
+        </div>
     </div>
     <script src="vue@2.js"></script>
     <script src="report.js"></script>
+    <script src="html2pdf.bundle.min.js"></script>
 </body>
 
 </html>

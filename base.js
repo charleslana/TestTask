@@ -47,7 +47,7 @@ export class Base {
     async click(selector) {
         const startTime = Date.now();
         let executionTime = 0;
-        const description = `Click no seletor ${selector}`;
+        const description = `Clique no seletor ${selector}`;
         let success = null;
         let fail = null;
         let screenshot = null;
@@ -55,7 +55,7 @@ export class Base {
             selector = this.getSelectorWithXpath(selector);
             await this.waitForSelector(selector);
             await this.page.click(selector);
-            success = 'Click realizado com sucesso!';
+            success = 'Clique realizado com sucesso!';
             console.log(success);
         } catch (err) {
             fail = `Erro ao clicar: ${err}`;
@@ -82,7 +82,7 @@ export class Base {
         try {
             await this.waitForSelector(selector);
             await this.page.click(`::-p-xpath(${selector})`);
-            console.log('Click realizado com sucesso!');
+            console.log('Clique realizado com sucesso!');
         } catch (err) {
             throw err;
         }

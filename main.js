@@ -269,6 +269,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
 
     try {
         result = await base.goto(test.url); //https://front.serverest.dev
+        result.actionType = 'navigate';
         lastTest.tests.push(result);
 
         for (const action of test.actions) {
@@ -279,21 +280,27 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
             switch (action.type) {
                 case 'type':
                     result = await base.type(action.selector, action.text);
+                    result.actionType = 'type';
                     break;
                 case 'fill':
                     result = await base.fill(action.selector, action.text);
+                    result.actionType = 'fill';
                     break;
                 case 'click':
                     result = await base.click(action.selector);
+                    result.actionType = 'click';
                     break;
                 case 'enter':
                     result = await base.enter();
+                    result.actionType = 'enter';
                     break;
                 case 'navigate':
                     result = await base.goto(action.selector);
+                    result.actionType = 'navigate';
                     break;
                 case 'assertText':
                     result = await base.assertText(action.selector, action.text);
+                    result.actionType = 'assertText';
                     break;
                 default:
                     throw new Error('Nenhuma ação foi encontrada');

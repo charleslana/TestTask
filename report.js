@@ -3,7 +3,9 @@ new Vue({
     data: {
         lastTest: {},
         selectedScreenshot: null,
-        showModal: false
+        showModal: false,
+        showExportModal: false,
+        showSuccessNotification: false
     },
     computed: {
         totalDuration() {
@@ -27,6 +29,42 @@ new Vue({
         closeModal() {
             this.showModal = false;
             this.selectedScreenshot = null;
+        },
+        closeExportModal() {
+            this.showExportModal = false;
+            this.showSuccessNotification = false;
+        },
+        exportPDF() {
+            this.showSuccessNotification = false;
+            const element = this.$refs.pdfContent;
+            element.style.display = 'block';
+
+            const now = new Date();
+            const filename = `testtask-relatorio-${now.toLocaleDateString('pt-BR').replace(/\//g, '-')}-${now.toTimeString().slice(0, 8).replace(/:/g, '_')}.pdf`;
+
+            const options = {
+                margin: [10, 10, 20, 10],
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(options).from(element).save().then(() => {
+                element.style.display = 'none';
+                this.showSuccessNotification = true;
+            });
+        },
+        translateActionType(type) {
+            const map = {
+                type: 'Digitar',
+                fill: 'Preencher',
+                click: 'Clicar',
+                enter: 'Pressionar Enter',
+                navigate: 'Navegar',
+                assertText: 'Validar Texto'
+            };
+            return map[type] || 'Ação desconhecida';
         }
     },
     mounted() {
