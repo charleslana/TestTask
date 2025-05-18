@@ -11,6 +11,10 @@ new Vue({
         totalDuration() {
             if (!this.lastTest.tests) return 0;
             return this.lastTest.tests.reduce((acc, item) => acc + (item.executionTime || 0), 0) / 1000;
+        },
+        testsPassed() {
+            if (!this.lastTest || !this.lastTest.tests) return 0;
+            return this.lastTest.tests.filter(test => !test.fail).length;
         }
     },
     methods: {

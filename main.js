@@ -206,6 +206,53 @@ function attachLoadErrorHandler(win) {
     });
 }
 
+async function runTestOnce(test, config, base, event, lastTest) {
+    let result;
+
+    result = await base.goto(test.url);
+    result.actionType = 'navigate';
+    lastTest.tests.push(result);
+
+    for (const action of test.actions) {
+        if (Boolean(action.disabled)) continue;
+
+        switch (action.type) {
+            case 'type':
+                result = await base.type(action.selector, action.text);
+                result.actionType = 'type';
+                break;
+            case 'fill':
+                result = await base.fill(action.selector, action.text);
+                result.actionType = 'fill';
+                break;
+            case 'click':
+                result = await base.click(action.selector);
+                result.actionType = 'click';
+                break;
+            case 'enter':
+                result = await base.enter();
+                result.actionType = 'enter';
+                break;
+            case 'navigate':
+                result = await base.goto(action.selector);
+                result.actionType = 'navigate';
+                break;
+            case 'assertText':
+                result = await base.assertText(action.selector, action.text);
+                result.actionType = 'assertText';
+                break;
+            default:
+                throw new Error('Nenhuma ação foi encontrada');
+        }
+
+        lastTest.tests.push(result);
+        if (result.fail) {
+            event.sender.send('test-failed', result.fail);
+            break;
+        }
+    }
+}
+
 ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     console.log('Iniciando automação no Puppeteer!');
     console.log(test);
@@ -251,7 +298,6 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         totalTime: 0,
         lastScreenshot: null,
     };
-    let result;
     let isClose = true;
     let isLastScreenshot = false;
 
@@ -268,56 +314,13 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     }
 
     try {
-        result = await base.goto(test.url); //https://front.serverest.dev
-        result.actionType = 'navigate';
-        lastTest.tests.push(result);
-
-        for (const action of test.actions) {
-            if (Boolean(action.disabled)) {
-                continue;
-            }
-
-            switch (action.type) {
-                case 'type':
-                    result = await base.type(action.selector, action.text);
-                    result.actionType = 'type';
-                    break;
-                case 'fill':
-                    result = await base.fill(action.selector, action.text);
-                    result.actionType = 'fill';
-                    break;
-                case 'click':
-                    result = await base.click(action.selector);
-                    result.actionType = 'click';
-                    break;
-                case 'enter':
-                    result = await base.enter();
-                    result.actionType = 'enter';
-                    break;
-                case 'navigate':
-                    result = await base.goto(action.selector);
-                    result.actionType = 'navigate';
-                    break;
-                case 'assertText':
-                    result = await base.assertText(action.selector, action.text);
-                    result.actionType = 'assertText';
-                    break;
-                default:
-                    throw new Error('Nenhuma ação foi encontrada');
-            }
-
-            lastTest.tests.push(result);
-
-            if (result.fail) {
-                event.sender.send('test-failed', result.fail);
-                break;
-            }
+        const iterationCount = config.iteration || 1;
+        for (let i = 0; i < iterationCount; i++) {
+            const client = await page.createCDPSession();
+            await client.send('Network.clearBrowserCookies');
+            await client.send('Network.clearBrowserCache');
+            await runTestOnce(test, config, base, event, lastTest);
         }
-
-        // await base.fill('#email', 'email@email.com');
-        // await base.type('#password', 'password');
-        // await base.click('::-p-xpath(//button[@data-testid="entrar"])');
-        // await base.assertText('.alert-dismissible > span', 'Email e/ou senha inválidos');
     } catch (error) {
         console.error('Erro no Puppeteer:', error);
         event.sender.send('test-failed', error);
@@ -326,8 +329,6 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
             const lastScreenshot = await base.screenshotWithBase64();
             lastTest.lastScreenshot = lastScreenshot;
         }
-        // const endTime = Date.now();
-        // const executionTime = endTime - startTime;
         const executionTime = lastTest.tests.reduce((sum, current) => {
             return sum + (current.executionTime || 0);
         }, 0);
@@ -335,6 +336,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         console.log(`O teste levou ${executionTime} ms para executar.`);
         event.sender.send('enable-start-button');
         event.sender.send('test-completed', lastTest);
+
         if (isClose) {
             await browser.close();
             await browser.disconnect();
@@ -343,6 +345,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
             }
         }
     }
+
 });
 
 ipcMain.on('about', async (event) => {

@@ -7,6 +7,7 @@ new Vue({
         selectedScreenshot: 'lastScreenshot',
         isCloseBrowser: true,
         fullScreenshot: false,
+        iteration: 1
     },
     computed: {
         isFullScreenshotEnabled() {
@@ -22,6 +23,7 @@ new Vue({
                 selectedScreenshot: this.selectedScreenshot,
                 isCloseBrowser: this.isCloseBrowser,
                 fullScreenshot: this.fullScreenshot,
+                iteration: this.iteration,
             };
 
             localStorage.setItem('confige2e', JSON.stringify(confige2e));
@@ -39,6 +41,8 @@ new Vue({
                     this.navigateWaitUntil = config.navigateWaitUntil ?? this.navigateWaitUntil;
                     this.selectedScreenshot = config.selectedScreenshot ?? this.selectedScreenshot;
                     this.isCloseBrowser = config.isCloseBrowser ?? this.isCloseBrowser;
+                    this.fullScreenshot = config.fullScreenshot ?? this.fullScreenshot;
+                    this.iteration = config.iteration ?? this.iteration;
                 } catch (e) {
                     console.error('Erro ao carregar configuração:', e);
                 }

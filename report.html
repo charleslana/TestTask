@@ -131,7 +131,23 @@
         <!-- Conteúdo oculto para gerar o PDF -->
         <div id="report-pdf" ref="pdfContent" style="display: none;" class="content">
             <h1 class="title is-4 has-text-dark">TestTask</h1>
-            <div class="has-text-grey">Gerado em {{ new Date().toLocaleString('pt-BR') }}</div>
+            <div class="has-text-grey">Relatório gerado em {{ new Date().toLocaleString('pt-BR') }}</div>
+            <!-- Resumo de status dos testes -->
+            <div style="margin: 1rem 0;">
+                <p :class="{
+                    'has-text-success': testsPassed === lastTest.tests.length,
+                    'has-text-danger': testsPassed !== lastTest.tests.length
+                }" style="font-size: 1.2rem;">
+                    Testes passaram:
+                    <span>{{ testsPassed === lastTest.tests.length ? '✅' : '❌' }}</span>
+                </p>
+                <p :class="{
+                    'has-text-success': testsPassed === lastTest.tests.length,
+                    'has-text-danger': testsPassed !== lastTest.tests.length
+                }">
+                    Testes: {{ lastTest.tests.length }}/{{ testsPassed }}
+                </p>
+            </div>
             <p class="has-text-grey-dark my-5">O teste durou: {{ totalDuration.toFixed(2) }}s</p>
 
             <table class="table is-bordered is-fullwidth is-striped">
