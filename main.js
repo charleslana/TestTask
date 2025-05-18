@@ -300,6 +300,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     };
     let isClose = true;
     let isLastScreenshot = false;
+    let iterationCount = 1;
 
     // configs
     if (config) {
@@ -311,10 +312,10 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         isClose = config.isCloseBrowser;
         isLastScreenshot = config.selectedScreenshot === 'lastScreenshot';
         base.fullScreenshot = config.fullScreenshot;
+        iterationCount = config.iteration;
     }
 
     try {
-        const iterationCount = config.iteration || 1;
         for (let i = 0; i < iterationCount; i++) {
             const client = await page.createCDPSession();
             await client.send('Network.clearBrowserCookies');
