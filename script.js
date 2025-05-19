@@ -19,7 +19,9 @@ new Vue({
             { type: 'type', name: 'Digitar' },
             { type: 'enter', name: 'Enter' },
             { type: 'navigate', name: 'Navegar' },
-            { type: 'assertText', name: 'Validar texto' }
+            { type: 'assertText', name: 'Validar texto' },
+            { type: 'waitForVisible', name: 'Aguardar elemento aparecer' },
+            { type: 'waitForNotVisible', name: 'Aguardar elemento desaparecer' }
         ],
         searchTerm: '',
         actionCurrent: null,

@@ -66,7 +66,9 @@ new Vue({
                 click: 'Clicar',
                 enter: 'Pressionar Enter',
                 navigate: 'Navegar',
-                assertText: 'Validar Texto'
+                assertText: 'Validar Texto',
+                waitForVisible: 'Aguardar elemento aparecer',
+                waitForNotVisible: 'Aguardar elemento desaparecer'
             };
             return map[type] || 'Ação desconhecida';
         }

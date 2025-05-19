@@ -68,10 +68,15 @@ export class Base {
         return { executionTime, description, success, fail, screenshot }
     }
 
-    async waitForSelector(selector) {
+    async waitForSelector(selector, isVisible = true) {
         try {
-            const element = await this.page.waitForSelector(selector, { visible: true });
-            console.log('Seletor encontrado com sucesso!');
+            let element;
+            if (isVisible) {
+                element = await this.page.waitForSelector(selector, { visible: true });
+            } else {
+                element = await this.page.waitForSelector(selector, { hidden: true });
+            }
+            console.log('Seletor aguardando espera com sucesso!');
             return element;
         } catch (err) {
             throw err;
@@ -246,5 +251,28 @@ export class Base {
             return await this.screenshotWithBase64();
         }
         return null;
+    }
+
+    async waitForVisible(selector, isVisible) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Aguardar o seletor ${selector}`;
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            selector = this.getSelectorWithXpath(selector);
+            await this.waitForSelector(selector, isVisible);
+            success = 'Espera aguardada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao aguardar: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot }
     }
 }

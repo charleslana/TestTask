@@ -164,7 +164,8 @@
                 </header>
                 <section class="modal-card-body">
                     <!-- Seletor ou URL -->
-                    <div class="field" v-if="actionCurrent?.type !== 'enter'">
+                    <div class="field"
+                        v-if="actionCurrent?.type !== 'enter' || actionCurrent?.type !== 'waitForVisible' || actionCurrent?.type !== 'waitForNotVisible'">
                         <label class="label">{{ actionLabel }}</label>
                         <div class="control">
                             <input class="input" type="text" v-model.trim="actionForm.selector"

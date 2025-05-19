@@ -97,6 +97,16 @@ function createWindow() {
                         label: 'Importar Exemplo Preencher',
                         enabled: isWorkspacePage,
                         click: () => mainWindow.webContents.send('import-example', '2-Preencher')
+                    },
+                    {
+                        label: 'Importar Exemplo Aguardar elemento aparecer',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '3-Aguardar elemento aparecer')
+                    },
+                    {
+                        label: 'Importar Exemplo Aguardar elemento desaparecer',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '4-Aguardar elemento desaparecer')
                     }
                 ]
             },
@@ -240,6 +250,14 @@ async function runTestOnce(test, config, base, event, lastTest) {
             case 'assertText':
                 result = await base.assertText(action.selector, action.text);
                 result.actionType = 'assertText';
+                break;
+            case 'waitForVisible':
+                result = await base.waitForVisible(action.selector, true);
+                result.actionType = 'waitForVisible';
+                break;
+            case 'waitForNotVisible':
+                result = await base.waitForVisible(action.selector, false);
+                result.actionType = 'waitForNotVisible';
                 break;
             default:
                 throw new Error('Nenhuma ação foi encontrada');

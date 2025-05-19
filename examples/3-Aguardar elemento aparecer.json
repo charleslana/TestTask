@@ -1,0 +1,22 @@
+{
+  "name": "Aguardar elemento aparecer",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://practice.expandtesting.com/add-remove-elements",
+    "actions": [
+      {
+        "type": "click",
+        "selector": "//button[contains(@class, \"btn-primary\")]",
+        "text": "",
+        "disabled": false
+      },
+      {
+        "type": "waitForVisible",
+        "selector": "//button[contains(@class, \"added-manuall\")]",
+        "text": "",
+        "disabled": false
+      }
+    ]
+  }
+}
