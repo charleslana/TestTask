@@ -34,6 +34,10 @@ new Vue({
         modalDeleteConfirm: false,
         deleteIndex: null,
         totalTime: 0,
+        modalUrlList: false,
+        urls: [],
+        newUrl: '',
+        editUrlIndex: null,
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {
@@ -240,7 +244,60 @@ new Vue({
         },
         openLastTestReport() {
             window.electron.ipcRenderer.send('report');
-        }
+        },
+        openUrlModal() {
+            this.loadUrls();
+            this.modalUrlList = true;
+            this.newUrl = '';
+            this.editUrlIndex = null;
+            this.$nextTick(() => {
+                const modalBody = this.$refs.modalBody;
+                if (modalBody) {
+                    modalBody.scrollTop = 0;
+                }
+            });
+        },
+        closeUrlModal() {
+            this.modalUrlList = false;
+        },
+        loadUrls() {
+            const saved = localStorage.getItem('savedUrls');
+            this.urls = saved ? JSON.parse(saved) : [];
+        },
+        saveUrls() {
+            localStorage.setItem('savedUrls', JSON.stringify(this.urls));
+        },
+        addUrl() {
+            const url = this.newUrl.trim();
+            if (!url) return;
+            if (this.editUrlIndex !== null) {
+                this.urls.splice(this.editUrlIndex, 1, url);
+            } else {
+                this.urls.push(url);
+            }
+            this.saveUrls();
+            this.newUrl = '';
+            this.editUrlIndex = null;
+        },
+        editUrl(index) {
+            this.newUrl = this.urls[index];
+            this.editUrlIndex = index;
+            this.$nextTick(() => {
+                const input = this.$refs.urlInput;
+                if (input) {
+                    input.scrollIntoView({ behavior: 'auto', block: 'start' });
+                    input.focus();
+                }
+            });
+        },
+        deleteUrl(index) {
+            this.urls.splice(index, 1);
+            this.saveUrls();
+        },
+        selectUrl(url) {
+            this.workspace.test.url = url;
+            this.closeUrlModal();
+        },
     },
     beforeDestroy() {
         window.electron.ipcRenderer.removeAllListeners('enable-start-button');

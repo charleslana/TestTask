@@ -59,7 +59,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="button is-small">Ou use urls cadastradas</button>
+                        <button class="button is-small" @click="openUrlModal">Ou use urls cadastradas</button>
                     </div>
                     <div class="box">
                         <button class="button is-medium" :disabled="!workspace.test.url"
@@ -208,6 +208,46 @@
                         <button class="button is-danger" @click="confirmDeleteAction">Sim</button>
                         <button class="button" @click="closeModalDeleteConfirm">Cancelar</button>
                     </div>
+                </footer>
+            </div>
+        </div>
+        <!---->
+        <!-- Modal de URLs Salvas -->
+        <div class="modal" :class="{ 'is-active': modalUrlList }">
+            <div class="modal-background" @click="closeUrlModal"></div>
+            <div class="modal-card" @click.stop>
+                <header class="modal-card-head">
+                    <p class="modal-card-title">URLs Salvas</p>
+                    <button class="delete" aria-label="close" @click="closeUrlModal"></button>
+                </header>
+                <section class="modal-card-body" ref="modalBody">
+                    <div class="field has-addons mb-4">
+                        <div class="control is-expanded">
+                            <input ref="urlInput" class="input" type="text" v-model.trim="newUrl"
+                                placeholder="Nova URL" />
+                        </div>
+                        <div class="control">
+                            <button class="button is-success" @click="addUrl" :disabled="!newUrl">Salvar</button>
+                        </div>
+                    </div>
+
+                    <div v-if="urls.length">
+                        <div class="box is-clickable mb-2" v-for="(url, index) in urls" :key="index"
+                            @click="selectUrl(url)">
+                            <div class="is-flex is-justify-content-space-between is-align-items-center">
+                                <span>{{ url }}</span>
+                                <div>
+                                    <button class="button is-small mr-2" @click.stop="editUrl(index)">Editar</button>
+                                    <button class="button is-small is-danger"
+                                        @click.stop="deleteUrl(index)">Excluir</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p v-else>Nenhuma URL salva.</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button" @click="closeUrlModal">Fechar</button>
                 </footer>
             </div>
         </div>

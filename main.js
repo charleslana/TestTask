@@ -223,6 +223,11 @@ async function runTestOnce(test, config, base, event, lastTest) {
     result.actionType = 'navigate';
     lastTest.tests.push(result);
 
+    if (result.fail) {
+        event.sender.send('test-failed', result.fail);
+        return;
+    }
+
     for (const action of test.actions) {
         if (Boolean(action.disabled)) continue;
 
