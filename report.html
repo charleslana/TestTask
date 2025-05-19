@@ -140,11 +140,9 @@
                     'has-text-success': testsPassed === lastTest.tests.length,
                     'has-text-danger': testsPassed !== lastTest.tests.length
                     }" style="font-size: 1.2rem;">
-                    <!-- Se todos passaram -->
                     <template v-if="testsPassed === lastTest.tests.length">
                         Testes passaram: {{ testsPassed }} de {{ lastTest.tests.length }} ✅
                     </template>
-                    <!-- Se tiver falha -->
                     <template v-else>
                         Testes: {{ testsPassed }} de {{ lastTest.tests.length }} (falharam {{ lastTest.tests.length -
                         testsPassed }}) ❌

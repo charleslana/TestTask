@@ -107,6 +107,16 @@ function createWindow() {
                         label: 'Importar Exemplo Aguardar elemento desaparecer',
                         enabled: isWorkspacePage,
                         click: () => mainWindow.webContents.send('import-example', '4-Aguardar elemento desaparecer')
+                    },
+                    {
+                        label: 'Importar Exemplo Digitar',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '5-Digitar')
+                    },
+                    {
+                        label: 'Importar Exemplo Limpar campo',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '6-Limpar campo')
                     }
                 ]
             },
@@ -263,6 +273,10 @@ async function runTestOnce(test, config, base, event, lastTest) {
             case 'waitForNotVisible':
                 result = await base.waitForVisible(action.selector, false);
                 result.actionType = 'waitForNotVisible';
+                break;
+            case 'clear':
+                result = await base.clear(action.selector);
+                result.actionType = 'clear';
                 break;
             default:
                 throw new Error('Nenhuma ação foi encontrada');

@@ -21,7 +21,8 @@ new Vue({
             { type: 'navigate', name: 'Navegar' },
             { type: 'assertText', name: 'Validar texto' },
             { type: 'waitForVisible', name: 'Aguardar elemento aparecer' },
-            { type: 'waitForNotVisible', name: 'Aguardar elemento desaparecer' }
+            { type: 'waitForNotVisible', name: 'Aguardar elemento desaparecer' },
+            { type: 'clear', name: 'Limpar' }
         ],
         searchTerm: '',
         actionCurrent: null,

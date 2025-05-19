@@ -1,5 +1,5 @@
 {
-  "name": "Aguardar elemento desaparecer",
+  "name": "Exemplo Aguardar elemento desaparecer",
   "version": "0.0.1",
   "testType": "e2e",
   "test": {

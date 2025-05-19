@@ -275,4 +275,29 @@ export class Base {
         }
         return { executionTime, description, success, fail, screenshot }
     }
+
+    async clear(selector) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Limpar o seletor ${selector}`;
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            selector = this.getSelectorWithXpath(selector);
+            await this.waitForSelector(selector);
+            await this.page.click(selector, { count: 3 });
+            await this.page.keyboard.press('Backspace');
+            success = 'Limpeza realizada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao limpar: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot }
+    }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "Aguardar elemento aparecer",
+  "name": "Exemplo Aguardar elemento aparecer",
   "version": "0.0.1",
   "testType": "e2e",
   "test": {
