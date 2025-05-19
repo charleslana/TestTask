@@ -7,7 +7,8 @@ new Vue({
         selectedScreenshot: 'lastScreenshot',
         isCloseBrowser: true,
         fullScreenshot: false,
-        iteration: 1
+        iteration: 1,
+        isMobile: false,
     },
     computed: {
         isFullScreenshotEnabled() {
@@ -24,6 +25,7 @@ new Vue({
                 isCloseBrowser: this.isCloseBrowser,
                 fullScreenshot: this.fullScreenshot,
                 iteration: this.iteration,
+                isMobile: this.isMobile,
             };
 
             localStorage.setItem('confige2e', JSON.stringify(confige2e));
@@ -43,6 +45,7 @@ new Vue({
                     this.isCloseBrowser = config.isCloseBrowser ?? this.isCloseBrowser;
                     this.fullScreenshot = config.fullScreenshot ?? this.fullScreenshot;
                     this.iteration = config.iteration ?? this.iteration;
+                    this.isMobile = config.isMobile ?? this.isMobile;
                 } catch (e) {
                     console.error('Erro ao carregar configuração:', e);
                 }

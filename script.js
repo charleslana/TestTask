@@ -1,17 +1,9 @@
-//window.electron.ipcRenderer.on('log-message', (message) => {
-//    console.log(message);
-//});
-
 new Vue({
     el: '#app',
     data: {
         isDisabled: false,
         testNotification: false,
         testFail: '',
-        // test: {
-        //     url: '',
-        //     actions: []
-        // },
         workspace: {
             id: '',
             name: '',

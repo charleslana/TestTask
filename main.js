@@ -173,8 +173,8 @@ function createConfigWindow() {
     const win = new BrowserWindow({
         width: 1280,
         height: 720,
-        resizable: false,
-        maximizable: false,
+        resizable: true,
+        maximizable: true,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -260,25 +260,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
 
     process.env.ELECTRON_START = 'puppeteer';
 
-    //const electronPath = path.join(
-    //    __dirname,
-    //    'node_modules',
-    //    'electron',
-    //    'dist',
-    //    `electron${process.platform === 'win32' ? '.exe' : ''}`
-    //);
-
     const electronPath = process.execPath;
-
-    //try {
-    //    const stats = fs.statSync(electronPath);
-    //    console.log(`Electron executable found at: ${electronPath}`);
-    //    event.sender.send('log-message', `Electron executable found at: ${electronPath}`);
-    //} catch (err) {
-    //    console.error(`Electron executable not found at: ${electronPath}`);
-    //    event.sender.send('log-message', `Electron executable not found at: ${electronPath}`);
-    //    return;
-    //}
 
     electronProcess = childProcess.spawn(electronPath, ['.', '--remote-debugging-port=9222']);
 
@@ -292,7 +274,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     const pages = await browser.pages();
     const page = pages[0];
     const base = new Base(page);
-    // const startTime = Date.now();
+
     const lastTest = {
         tests: [],
         totalTime: 0,
@@ -301,6 +283,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     let isClose = true;
     let isLastScreenshot = false;
     let iterationCount = 1;
+    let isMobile = false;
 
     // configs
     if (config) {
@@ -313,6 +296,18 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         isLastScreenshot = config.selectedScreenshot === 'lastScreenshot';
         base.fullScreenshot = config.fullScreenshot;
         iterationCount = config.iteration;
+        isMobile = config.isMobile;
+    }
+
+    if (isMobile) {
+        await page.setViewport({
+            width: 375,
+            height: 720,
+            deviceScaleFactor: 1,
+            isMobile: true,
+            hasTouch: true,
+            isLandscape: false
+        });
     }
 
     try {
@@ -351,9 +346,6 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
 
 ipcMain.on('about', async (event) => {
     createAboutWindow();
-    //if (busyWindow) {
-    //    busyWindow.close();
-    //}
 });
 
 ipcMain.on('config', async (event) => {

@@ -58,6 +58,7 @@
                         <div class="timeline-content" v-if="result.screenshot">
                             <figure class="image is-128x128">
                                 <img :src="result.screenshot" alt="Screenshot" class="is-clickable"
+                                    style="object-fit: contain; width: 128px; height: 128px;"
                                     @click="changeScreenshot(result.screenshot)" />
                             </figure>
                         </div>
@@ -81,6 +82,7 @@
                         <p class="heading">Última captura de tela</p>
                         <figure class="image is-128x128">
                             <img :src="lastTest.lastScreenshot" alt="Última Screenshot" class="is-clickable"
+                                style="object-fit: contain; width: 128px; height: 128px;"
                                 @click="changeScreenshot(lastTest.lastScreenshot)" />
                         </figure>
                     </div>
