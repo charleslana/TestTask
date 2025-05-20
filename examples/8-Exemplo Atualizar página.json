@@ -1,0 +1,22 @@
+{
+  "name": "Exemplo Atualizar página",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://www.saucedemo.com/v1/",
+    "actions": [
+      {
+        "type": "fill",
+        "selector": "#user-name",
+        "text": "exemplo de texto",
+        "disabled": false
+      },
+      {
+        "type": "reload",
+        "selector": "",
+        "text": "",
+        "disabled": false
+      }
+    ]
+  }
+}

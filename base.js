@@ -300,4 +300,89 @@ export class Base {
         }
         return { executionTime, description, success, fail, screenshot }
     }
+
+    async reload() {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = 'Atualizar página';
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            await this.page.reload({ waitUntil: this.navigateWaitUntil, timeout: this.navigateTimeout });
+            success = 'Página atualizada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao atualizar página: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot }
+    }
+
+    async select(selector, value) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Selecionar no seletor ${selector} com valor ${value}`;
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            selector = this.getSelectorWithXpath(selector);
+            await this.waitForSelector(selector);
+            await this.page.select(selector, value);
+            success = 'Seleção realizada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao digitar: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot }
+    }
+
+    async dragAndDrop(fromElement, toElement) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Arrastar o seletor com ${fromElement} e soltar com seletor ${toElement}`;
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            fromElement = this.getSelectorWithXpath(fromElement);
+            toElement = this.getSelectorWithXpath(toElement);
+            await this.dragDrop(fromElement, toElement);
+            success = 'Arrastar e soltar realizado com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao arrastar e soltar: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot }
+    }
+
+    async dragDrop(fromElement, toElement) {
+        const startElement = await this.waitForSelector(fromElement);
+        const targetElement = await this.waitForSelector(toElement);
+        const startBoundingBox = await startElement.boundingBox();
+        const targetBoundingBox = await targetElement.boundingBox();
+        const startX = startBoundingBox.x + startBoundingBox.width / 2;
+        const startY = startBoundingBox.y + startBoundingBox.height / 2;
+        const endX = targetBoundingBox.x + targetBoundingBox.width / 2;
+        const endY = targetBoundingBox.y + targetBoundingBox.height / 2;
+        await this.page.mouse.move(startX, startY);
+        await this.page.mouse.down();
+        await this.page.mouse.move(endX, endY, { steps: 10 });
+        await this.page.mouse.up();
+    }
 }

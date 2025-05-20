@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, dialog, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog, globalShortcut, shell } = require('electron');
 const path = require('path');
 const childProcess = require('child_process');
 const puppeteer = require('puppeteer-core');
@@ -117,6 +117,31 @@ function createWindow() {
                         label: 'Importar Exemplo Limpar campo',
                         enabled: isWorkspacePage,
                         click: () => mainWindow.webContents.send('import-example', '6-Limpar campo')
+                    },
+                    {
+                        label: 'Importar Exemplo Pressionar Enter',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '7-Exemplo Pressionar Enter')
+                    },
+                    {
+                        label: 'Importar Exemplo Atualizar página',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '8-Exemplo Atualizar página')
+                    },
+                    {
+                        label: 'Importar Exemplo Validação de texto',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '9-Exemplo Validação de texto')
+                    },
+                    {
+                        label: 'Importar Exemplo Select',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '10-Exemplo Select')
+                    },
+                    {
+                        label: 'Importar Exemplo Arrastar e Soltar',
+                        enabled: isWorkspacePage,
+                        click: () => mainWindow.webContents.send('import-example', '11-Exemplo Arrastar e Soltar')
                     }
                 ]
             },
@@ -126,6 +151,18 @@ function createWindow() {
                     {
                         label: 'Ver Informações',
                         click: () => createAboutWindow()
+                    },
+                    {
+                        label: 'GitHub do Dev',
+                        click: () => {
+                            shell.openExternal('https://example.com');
+                        }
+                    },
+                    {
+                        label: 'LinkedIn do Dev',
+                        click: () => {
+                            shell.openExternal('https://example.com');
+                        }
                     }
                 ]
             }
@@ -278,6 +315,18 @@ async function runTestOnce(test, config, base, event, lastTest) {
                 result = await base.clear(action.selector);
                 result.actionType = 'clear';
                 break;
+            case 'reload':
+                result = await base.reload();
+                result.actionType = 'reload';
+                break;
+            case 'select':
+                result = await base.select(action.selector, action.text);
+                result.actionType = 'select';
+                break;
+            case 'dragAndDrop':
+                result = await base.dragAndDrop(action.selector, action.text);
+                result.actionType = 'dragAndDrop';
+                break;
             default:
                 throw new Error('Nenhuma ação foi encontrada');
         }
@@ -321,6 +370,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     let isLastScreenshot = false;
     let iterationCount = 1;
     let isMobile = false;
+    let isClearStorage = true;
 
     // configs
     if (config) {
@@ -334,6 +384,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         base.fullScreenshot = config.fullScreenshot;
         iterationCount = config.iteration;
         isMobile = config.isMobile;
+        isClearStorage = config.isClearStorage;
     }
 
     if (isMobile) {
@@ -349,10 +400,20 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
 
     try {
         for (let i = 0; i < iterationCount; i++) {
-            const client = await page.createCDPSession();
-            await client.send('Network.clearBrowserCookies');
-            await client.send('Network.clearBrowserCache');
+            await page.goto("about:blank");
             await runTestOnce(test, config, base, event, lastTest);
+            if (isClearStorage) {
+                const cookies = await browser.cookies();
+                for (const cookie of cookies) {
+                    await browser.deleteCookie(cookie);
+                }
+                await page.evaluate(() => {
+                    localStorage.clear();
+                });
+                await page.evaluate(() => {
+                    sessionStorage.clear();
+                });
+            }
         }
     } catch (error) {
         console.error('Erro no Puppeteer:', error);
@@ -362,13 +423,6 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
             const lastScreenshot = await base.screenshotWithBase64();
             lastTest.lastScreenshot = lastScreenshot;
         }
-        const executionTime = lastTest.tests.reduce((sum, current) => {
-            return sum + (current.executionTime || 0);
-        }, 0);
-        lastTest.totalTime = executionTime;
-        console.log(`O teste levou ${executionTime} ms para executar.`);
-        event.sender.send('enable-start-button');
-        event.sender.send('test-completed', lastTest);
 
         if (isClose) {
             await browser.close();
@@ -377,6 +431,14 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
                 electronProcess.kill();
             }
         }
+
+        const executionTime = lastTest.tests.reduce((sum, current) => {
+            return sum + (current.executionTime || 0);
+        }, 0);
+        lastTest.totalTime = executionTime;
+        console.log(`O teste levou ${executionTime} ms para executar.`);
+        event.sender.send('enable-start-button');
+        event.sender.send('test-completed', lastTest);
     }
 
 });

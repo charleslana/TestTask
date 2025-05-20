@@ -69,7 +69,10 @@ new Vue({
                 assertText: 'Validar Texto',
                 waitForVisible: 'Aguardar elemento aparecer',
                 waitForNotVisible: 'Aguardar elemento desaparecer',
-                clear: 'Limpar'
+                clear: 'Limpar',
+                reload: 'Atualizar página',
+                select: 'Select',
+                dragAndDrop: 'Arrastar e Soltar'
             };
             return map[type] || 'Ação desconhecida';
         }

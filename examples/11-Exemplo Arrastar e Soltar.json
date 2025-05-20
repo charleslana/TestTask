@@ -1,0 +1,28 @@
+{
+  "name": "Exemplo Arrastar e Soltar",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://practice.expandtesting.com/drag-and-drop",
+    "actions": [
+      {
+        "type": "dragAndDrop",
+        "selector": "#column-a",
+        "text": "#column-b",
+        "disabled": false
+      },
+      {
+        "type": "navigate",
+        "selector": "https://practice.expandtesting.com/drag-and-drop-circles",
+        "text": "",
+        "disabled": false
+      },
+      {
+        "type": "dragAndDrop",
+        "selector": ".red",
+        "text": "#target",
+        "disabled": false
+      }
+    ]
+  }
+}

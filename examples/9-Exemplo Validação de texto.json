@@ -1,0 +1,34 @@
+{
+  "name": "Exemplo Validação de texto",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://front.serverest.dev",
+    "actions": [
+      {
+        "type": "fill",
+        "selector": "#email",
+        "text": "email@email.com",
+        "disabled": false
+      },
+      {
+        "type": "type",
+        "selector": "#password",
+        "text": "senha",
+        "disabled": false
+      },
+      {
+        "type": "click",
+        "selector": "//button[@data-testid=\"entrar\"]",
+        "text": "",
+        "disabled": false
+      },
+      {
+        "type": "assertText",
+        "selector": "div[role='alert'] span:nth-child(2)",
+        "text": "Email e/ou senha inválidos",
+        "disabled": false
+      }
+    ]
+  }
+}

@@ -4,18 +4,33 @@ new Vue({
         navigateTimeout: 15000,
         defaultTimeout: 10000,
         navigateWaitUntil: 'domcontentloaded',
-        selectedScreenshot: 'lastScreenshot',
+        selectedScreenshot: 'everyScreenshot',
         isCloseBrowser: true,
         fullScreenshot: false,
         iteration: 1,
         isMobile: false,
+        isClearStorage: true,
     },
     computed: {
         isFullScreenshotEnabled() {
             return this.selectedScreenshot !== 'neverScreenshot';
         }
     },
+    watch: {
+        navigateTimeout(newValue) {
+            this.navigateTimeout = this.validateValue(newValue);
+        },
+        defaultTimeout(newValue) {
+            this.defaultTimeout = this.validateValue(newValue);
+        },
+        iteration(newValue) {
+            this.iteration = this.validateValue(newValue);
+        }
+    },
     methods: {
+        validateValue(value) {
+            return Math.max(1, Number(value));
+        },
         saveConfig() {
             const confige2e = {
                 navigateTimeout: this.navigateTimeout,
@@ -26,6 +41,7 @@ new Vue({
                 fullScreenshot: this.fullScreenshot,
                 iteration: this.iteration,
                 isMobile: this.isMobile,
+                isClearStorage: this.isClearStorage,
             };
 
             localStorage.setItem('confige2e', JSON.stringify(confige2e));
@@ -46,6 +62,7 @@ new Vue({
                     this.fullScreenshot = config.fullScreenshot ?? this.fullScreenshot;
                     this.iteration = config.iteration ?? this.iteration;
                     this.isMobile = config.isMobile ?? this.isMobile;
+                    this.isClearStorage = config.isClearStorage ?? this.isClearStorage;
                 } catch (e) {
                     console.error('Erro ao carregar configuração:', e);
                 }

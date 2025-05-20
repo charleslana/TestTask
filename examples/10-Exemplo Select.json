@@ -1,0 +1,28 @@
+{
+  "name": "Exemplo Select",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://practice.expandtesting.com/dropdown",
+    "actions": [
+      {
+        "type": "select",
+        "selector": "//select[@id=\"dropdown\"]",
+        "text": "2",
+        "disabled": false
+      },
+      {
+        "type": "select",
+        "selector": ".form-control",
+        "text": "100",
+        "disabled": false
+      },
+      {
+        "type": "select",
+        "selector": "#country",
+        "text": "US",
+        "disabled": false
+      }
+    ]
+  }
+}

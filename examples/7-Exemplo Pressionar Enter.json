@@ -1,0 +1,28 @@
+{
+  "name": "Exemplo Pressionar Enter",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://www.saucedemo.com/v1/",
+    "actions": [
+      {
+        "type": "fill",
+        "selector": "#user-name",
+        "text": "exemplo de texto",
+        "disabled": false
+      },
+      {
+        "type": "enter",
+        "selector": "",
+        "text": "",
+        "disabled": false
+      },
+      {
+        "type": "waitForVisible",
+        "selector": "//h3[@data-test='error' and contains(text()[2], 'Password is required')]/text()[2]",
+        "text": "",
+        "disabled": false
+      }
+    ]
+  }
+}

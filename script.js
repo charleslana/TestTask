@@ -22,7 +22,10 @@ new Vue({
             { type: 'assertText', name: 'Validar texto' },
             { type: 'waitForVisible', name: 'Aguardar elemento aparecer' },
             { type: 'waitForNotVisible', name: 'Aguardar elemento desaparecer' },
-            { type: 'clear', name: 'Limpar' }
+            { type: 'clear', name: 'Limpar' },
+            { type: 'reload', name: 'Atualizar página' },
+            { type: 'select', name: 'Select' },
+            { type: 'dragAndDrop', name: 'Arrastar e Soltar' }
         ],
         searchTerm: '',
         actionCurrent: null,
@@ -74,9 +77,9 @@ new Vue({
             );
         },
         isValidActionForm() {
-            if (this.actionCurrent?.type === 'enter') return true;
+            if (this.actionCurrent?.type === 'enter' || this.actionCurrent?.type === 'reload') return true;
             if (!this.actionForm.selector.trim()) return false;
-            if (['fill', 'type', 'assertText'].includes(this.actionCurrent?.type)) {
+            if (['fill', 'type', 'assertText', 'select', 'dragAndDrop'].includes(this.actionCurrent?.type)) {
                 return !!this.actionForm.text.trim();
             }
             return true;
@@ -100,6 +103,8 @@ new Vue({
                 return 'Texto a validar';
             } else if (this.actionCurrent?.type === 'fill' || this.actionCurrent?.type === 'type') {
                 return 'Texto a digitar';
+            } else if (this.actionCurrent?.type === 'select' || this.actionCurrent?.type === 'dragAndDrop') {
+                return 'Valor';
             }
             return '';
         }
@@ -183,7 +188,7 @@ new Vue({
                 disabled: false
             };
 
-            if (this.actionCurrent.type !== 'enter') {
+            if (this.actionCurrent.type !== 'enter' && this.actionCurrent.type !== 'reload') {
                 actionToSave.selector = this.actionForm.selector;
                 if (this.actionForm.text) {
                     actionToSave.text = this.actionForm.text;

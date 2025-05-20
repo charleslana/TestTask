@@ -85,15 +85,16 @@
                                 </header>
                                 <div class="card-content">
                                     <div class="content">
-                                        <p v-if="action.type !== 'enter'"><strong>{{ action.type === 'navigate'
+                                        <p v-if="action.type !== 'enter' && action.type !== 'reload'"><strong>{{
+                                                action.type === 'navigate'
                                                 ? 'URL' : 'Seletor' }}:</strong> {{
                                             action.selector }}</p>
-                                        <p v-if="action.text"><strong>Texto:</strong> {{ action.text }}</p>
+                                        <p v-if="action.text"><strong>Valor:</strong> {{ action.text }}</p>
                                     </div>
                                 </div>
                                 <footer class="card-footer">
                                     <a class="card-footer-item" @click="editAction(index)"
-                                        v-if="action.type !== 'enter'">Editar</a>
+                                        v-if="action.type !== 'enter' && action.type !== 'reload'">Editar</a>
                                     <a class="card-footer-item has-text-danger"
                                         @click="showModalDeleteConfirm(index)">Excluir</a>
                                 </footer>
@@ -166,7 +167,7 @@
                 </header>
                 <section class="modal-card-body">
                     <!-- Seletor ou URL -->
-                    <div class="field" v-if="actionCurrent?.type !== 'enter'">
+                    <div class="field" v-if="actionCurrent?.type !== 'enter' && actionCurrent?.type !== 'reload'">
                         <label class="label">{{ actionLabel }}</label>
                         <div class="control">
                             <input class="input" type="text" v-model.trim="actionForm.selector"
@@ -175,8 +176,8 @@
                     </div>
                     <!-- Campo de texto para ações específicas -->
                     <div class="field"
-                        v-if="actionCurrent && ['fill', 'type', 'assertText'].includes(actionCurrent.type)">
-                        <label class="label">Texto</label>
+                        v-if="actionCurrent && ['fill', 'type', 'assertText', 'select', 'dragAndDrop'].includes(actionCurrent.type)">
+                        <label class="label">Valor</label>
                         <div class="control">
                             <input class="input" type="text" v-model.trim="actionForm.text"
                                 :placeholder="textPlaceholder" />
