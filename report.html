@@ -8,6 +8,17 @@
     <link rel="stylesheet" href="bulma.min.css">
     <link rel="stylesheet" href="bulma-timeline.min.css">
     <link rel="stylesheet" href="modal-fx.min.css">
+    <style>
+        .image-zoom {
+            max-width: 90%;
+            max-height: 90%;
+            transition: transform 0.2s;
+        }
+
+        .image-zoom:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 
 <body>
@@ -98,8 +109,14 @@
         <!-- MODAL de Imagem em tela cheia -->
         <div class="modal modal-fx-superScaled" :class="{ 'is-active': showModal }">
             <div class="modal-background" @click="closeModal"></div>
-            <div class="modal-content is-huge is-image">
-                <img :src="selectedScreenshot" alt="Screenshot grande">
+            <div class="modal-content is-huge is-image is-relative" style="width: 90vw; height: 90vh;">
+                <div class="buttons" style="position: absolute; z-index: 1000; top: 10px; right: 10px;">
+                    <button @click="zoomIn" class="button">Aumentar Zoom</button>
+                    <button @click="zoomOut" class="button">Diminuir Zoom</button>
+                    <button @click="resetZoom" class="button">Resetar Zoom</button>
+                </div>
+                <img :src="selectedScreenshot" alt="Screenshot grande" class="image-zoom"
+                    :style="{ transform: `scale(${currentZoom})` }">
             </div>
             <button class="modal-close is-large" aria-label="close" @click="closeModal"></button>
         </div>

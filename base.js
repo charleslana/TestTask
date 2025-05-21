@@ -385,4 +385,78 @@ export class Base {
         await this.page.mouse.move(endX, endY, { steps: 10 });
         await this.page.mouse.up();
     }
+
+    async iframeType(iframeSelector, selector, text) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Digitar o seletor com ${selector}, iframe selector ${iframeSelector} com texto ${text}`;
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            iframeSelector = this.getSelectorWithXpath(iframeSelector);
+            selector = this.getSelectorWithXpath(selector);
+            await this.handleIframeType(iframeSelector, selector, text);
+            success = 'Digitar com iframe realizado com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao digitar com iframe: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot }
+    }
+
+    async handleIframeType(iframeSelector, selector, text) {
+        const frame = await this.findFrame(iframeSelector);
+        if (frame) {
+            const elementHandle = await frame.$(selector);
+            if (elementHandle) {
+                await elementHandle.type(text);
+            } else {
+                throw new Error(`Elemento ${selector} não encontrado no iframe`);
+            }
+        } else {
+            throw new Error(`Iframe com seletor ${iframeSelector} não encontrado`);
+        }
+    }
+
+    async findFrame(selector) {
+        const frameHandle = await this.waitForSelector(selector);
+        if (frameHandle) {
+            const frame = await frameHandle.contentFrame();
+            return frame;
+        }
+        return null;
+    }
+
+    async clickWaitForResponse(selector, urlPattern) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Clique no seletor ${selector} e aguarde a resposta da url ${urlPattern}`;
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            const regexPattern = new RegExp(urlPattern.replace(/\*\*/g, '.*?'));
+            const responsePromise = this.page.waitForResponse(response =>
+                regexPattern.test(response.url())
+            );
+            await this.click(selector);
+            await responsePromise;
+            success = 'Clique realizado e espera pela resposta feito com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao realizar clique e esperar a URL ${urlPattern}: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot }
+    }
 }

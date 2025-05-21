@@ -89,59 +89,84 @@ function createWindow() {
                 label: 'Exemplos de workspaces',
                 submenu: [
                     {
-                        label: 'Importar Exemplo Clique',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '1-Click')
+                        label: 'Exemplos testes E2E',
+                        submenu: [
+                            {
+                                label: 'Importar Exemplo Clique',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '1-Click')
+                            },
+                            {
+                                label: 'Importar Exemplo Preencher',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '2-Preencher')
+                            },
+                            {
+                                label: 'Importar Exemplo Aguardar elemento aparecer',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '3-Aguardar elemento aparecer')
+                            },
+                            {
+                                label: 'Importar Exemplo Aguardar elemento desaparecer',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '4-Aguardar elemento desaparecer')
+                            },
+                            {
+                                label: 'Importar Exemplo Digitar',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '5-Digitar')
+                            },
+                            {
+                                label: 'Importar Exemplo Limpar campo',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '6-Limpar campo')
+                            },
+                            {
+                                label: 'Importar Exemplo Pressionar Enter',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '7-Exemplo Pressionar Enter')
+                            },
+                            {
+                                label: 'Importar Exemplo Atualizar página',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '8-Exemplo Atualizar página')
+                            },
+                            {
+                                label: 'Importar Exemplo Validação de texto',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '9-Exemplo Validação de texto')
+                            },
+                            {
+                                label: 'Importar Exemplo Select',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '10-Exemplo Select')
+                            },
+                            {
+                                label: 'Importar Exemplo Arrastar e Soltar',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '11-Exemplo Arrastar e Soltar')
+                            },
+                            {
+                                label: 'Importar Exemplo Digitar Iframe',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '12-Exemplo Digitar Iframe')
+                            },
+                            {
+                                label: 'Importar Exemplo Clique e espera resposta',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '13-Exemplo Clique e espera resposta')
+                            }
+                        ]
                     },
                     {
-                        label: 'Importar Exemplo Preencher',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '2-Preencher')
-                    },
-                    {
-                        label: 'Importar Exemplo Aguardar elemento aparecer',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '3-Aguardar elemento aparecer')
-                    },
-                    {
-                        label: 'Importar Exemplo Aguardar elemento desaparecer',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '4-Aguardar elemento desaparecer')
-                    },
-                    {
-                        label: 'Importar Exemplo Digitar',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '5-Digitar')
-                    },
-                    {
-                        label: 'Importar Exemplo Limpar campo',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '6-Limpar campo')
-                    },
-                    {
-                        label: 'Importar Exemplo Pressionar Enter',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '7-Exemplo Pressionar Enter')
-                    },
-                    {
-                        label: 'Importar Exemplo Atualizar página',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '8-Exemplo Atualizar página')
-                    },
-                    {
-                        label: 'Importar Exemplo Validação de texto',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '9-Exemplo Validação de texto')
-                    },
-                    {
-                        label: 'Importar Exemplo Select',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '10-Exemplo Select')
-                    },
-                    {
-                        label: 'Importar Exemplo Arrastar e Soltar',
-                        enabled: isWorkspacePage,
-                        click: () => mainWindow.webContents.send('import-example', '11-Exemplo Arrastar e Soltar')
+                        label: 'Exemplos testes API',
+                        submenu: [
+                            {
+                                label: 'Importar Exemplo API',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.executeJavaScript(`alert("Não implementado");`)
+                            },
+                        ]
                     }
                 ]
             },
@@ -326,6 +351,14 @@ async function runTestOnce(test, config, base, event, lastTest) {
             case 'dragAndDrop':
                 result = await base.dragAndDrop(action.selector, action.text);
                 result.actionType = 'dragAndDrop';
+                break;
+            case 'iframeType':
+                result = await base.iframeType(action.selector2, action.selector, action.text);
+                result.actionType = 'iframeType';
+                break;
+            case 'clickWaitForResponse':
+                result = await base.clickWaitForResponse(action.selector, action.text);
+                result.actionType = 'clickWaitForResponse';
                 break;
             default:
                 throw new Error('Nenhuma ação foi encontrada');

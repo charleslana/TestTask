@@ -1,0 +1,17 @@
+{
+  "name": "Exemplo Digitar Iframe",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://practice.expandtesting.com/iframe",
+    "actions": [
+      {
+        "type": "iframeType",
+        "selector": "#email",
+        "text": "email@email.com",
+        "selector2": "#email-subscribe",
+        "disabled": false
+      }
+    ]
+  }
+}

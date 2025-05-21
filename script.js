@@ -25,14 +25,17 @@ new Vue({
             { type: 'clear', name: 'Limpar' },
             { type: 'reload', name: 'Atualizar página' },
             { type: 'select', name: 'Select' },
-            { type: 'dragAndDrop', name: 'Arrastar e Soltar' }
+            { type: 'dragAndDrop', name: 'Arrastar e Soltar' },
+            { type: 'iframeType', name: 'Digitar no iframe' },
+            { type: 'clickWaitForResponse', name: 'Clique e espera pela resposta' }
         ],
         searchTerm: '',
         actionCurrent: null,
         modalConfigAction: false,
         actionForm: {
             selector: '',
-            text: ''
+            text: '',
+            selector2: ''
         },
         editIndex: null,
         modalDeleteConfirm: false,
@@ -79,8 +82,11 @@ new Vue({
         isValidActionForm() {
             if (this.actionCurrent?.type === 'enter' || this.actionCurrent?.type === 'reload') return true;
             if (!this.actionForm.selector.trim()) return false;
-            if (['fill', 'type', 'assertText', 'select', 'dragAndDrop'].includes(this.actionCurrent?.type)) {
+            if (['fill', 'type', 'assertText', 'select', 'dragAndDrop', 'iframeType', 'clickWaitForResponse'].includes(this.actionCurrent?.type)) {
                 return !!this.actionForm.text.trim();
+            }
+            if (['iframeType'].includes(this.actionCurrent?.type)) {
+                return !!this.actionForm.selector2.trim();
             }
             return true;
         },
@@ -101,10 +107,12 @@ new Vue({
         textPlaceholder() {
             if (this.actionCurrent?.type === 'assertText') {
                 return 'Texto a validar';
-            } else if (this.actionCurrent?.type === 'fill' || this.actionCurrent?.type === 'type') {
+            } else if (this.actionCurrent?.type === 'fill' || this.actionCurrent?.type === 'type' || this.actionCurrent?.type === 'iframeType') {
                 return 'Texto a digitar';
             } else if (this.actionCurrent?.type === 'select' || this.actionCurrent?.type === 'dragAndDrop') {
                 return 'Valor';
+            } else if (this.actionCurrent?.type === 'clickWaitForResponse') {
+                return 'Ex: **/api/path/**';
             }
             return '';
         }
@@ -164,7 +172,7 @@ new Vue({
         },
         selectAction(action) {
             this.actionCurrent = action;
-            this.actionForm = { selector: '', text: '' };
+            this.actionForm = { selector: '', text: '', selector2: '' };
             this.modalConfigAction = true;
         },
         editAction(index) {
@@ -173,7 +181,8 @@ new Vue({
             this.actionCurrent = this.actions.find(a => a.type === action.type);
             this.actionForm = {
                 selector: action.selector || '',
-                text: action.text || ''
+                text: action.text || '',
+                selector2: action.selector2 || ''
             };
             this.modalConfigAction = true;
         },
@@ -185,6 +194,7 @@ new Vue({
                 type: this.actionCurrent.type,
                 selector: this.actionForm.selector,
                 text: this.actionForm.text || '',
+                selector2: this.actionForm.selector2 || '',
                 disabled: false
             };
 
@@ -192,6 +202,9 @@ new Vue({
                 actionToSave.selector = this.actionForm.selector;
                 if (this.actionForm.text) {
                     actionToSave.text = this.actionForm.text;
+                }
+                if (this.actionForm.selector2) {
+                    actionToSave.selector2 = this.actionForm.selector2;
                 }
             }
 
@@ -207,7 +220,7 @@ new Vue({
         },
         closeModalConfig() {
             this.modalConfigAction = false;
-            this.actionForm = { selector: '', text: '' };
+            this.actionForm = { selector: '', text: '', selector2: '' };
             this.actionCurrent = null;
             this.editIndex = null;
         },
@@ -303,6 +316,17 @@ new Vue({
         selectUrl(url) {
             this.workspace.test.url = url;
             this.closeUrlModal();
+        },
+        duplicateAction(index) {
+            const actionToDuplicate = this.workspace.test.actions[index];
+            const newAction = {
+                ...actionToDuplicate,
+                selector: actionToDuplicate.selector,
+                text: actionToDuplicate.text,
+                selector2: actionToDuplicate.selector2,
+                disabled: false,
+            };
+            this.workspace.test.actions.splice(index + 1, 0, newAction);
         },
     },
     beforeDestroy() {

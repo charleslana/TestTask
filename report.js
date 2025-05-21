@@ -5,7 +5,8 @@ new Vue({
         selectedScreenshot: null,
         showModal: false,
         showExportModal: false,
-        showSuccessNotification: false
+        showSuccessNotification: false,
+        currentZoom: 1,
     },
     computed: {
         totalDuration() {
@@ -33,6 +34,7 @@ new Vue({
         closeModal() {
             this.showModal = false;
             this.selectedScreenshot = null;
+            this.currentZoom = 1;
         },
         closeExportModal() {
             this.showExportModal = false;
@@ -72,9 +74,22 @@ new Vue({
                 clear: 'Limpar',
                 reload: 'Atualizar página',
                 select: 'Select',
-                dragAndDrop: 'Arrastar e Soltar'
+                dragAndDrop: 'Arrastar e Soltar',
+                iframeType: 'Digitar no iframe',
+                clickWaitForResponse: 'Clique e espera pela resposta'
             };
             return map[type] || 'Ação desconhecida';
+        },
+        zoomIn() {
+            this.currentZoom += 0.1;
+        },
+        zoomOut() {
+            if (this.currentZoom > 0.2) {
+                this.currentZoom -= 0.1;
+            }
+        },
+        resetZoom() {
+            this.currentZoom = 1;
         }
     },
     mounted() {
