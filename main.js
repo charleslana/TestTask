@@ -6,6 +6,7 @@ const fs = require('fs');
 const { Base } = require('./base');
 const packageJson = require('./package.json');
 const os = require('os');
+const { ApiBase } = require('./api-base');
 
 let busyWindow;
 let electronProcess;
@@ -372,6 +373,18 @@ async function runTestOnce(test, config, base, event, lastTest) {
     }
 }
 
+async function handleApiTests(apiRequests, apiBase) {
+    const results = [];
+    for (const apiRequest of apiRequests) {
+        try {
+            const result = await apiBase.request(apiRequest);
+            results.push({ url: apiRequest.url, duration: result.duration, error: null });
+        } catch (error) {
+            results.push({ url: apiRequest.url, duration: null, error: error.message });
+        }
+    }
+}
+
 ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     console.log('Iniciando automação no Puppeteer!');
     console.log(test);
@@ -474,6 +487,40 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         event.sender.send('test-completed', lastTest);
     }
 
+});
+
+ipcMain.on('start-api-tests', async (event, apiRequests) => {
+    console.log('Iniciando testes de API!');
+
+    process.env.ELECTRON_START = 'puppeteer';
+
+    const electronPath = process.execPath;
+
+    electronProcess = childProcess.spawn(electronPath, ['.', '--remote-debugging-port=9222']);
+
+    const browser = await puppeteer.connect({
+        browserURL: 'http://localhost:9222',
+        defaultViewport: null
+    });
+    const pages = await browser.pages();
+    const page = pages[0];
+    const apiBase = new ApiBase(page);
+
+    try {
+
+        await handleApiTests(apiRequests, apiBase);
+
+        event.sender.send('api-tests-results', results);
+    } catch (error) {
+        console.error('Erro ao executar testes de API:', error);
+        event.sender.send('api-tests-results', [{ error: 'Erro ao iniciar os testes de API' }]);
+    } finally {
+        await browser.close();
+        await browser.disconnect();
+        if (electronProcess) {
+            electronProcess.kill();
+        }
+    }
 });
 
 ipcMain.on('about', async (event) => {

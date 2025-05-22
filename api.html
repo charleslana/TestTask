@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de API</title>
+    <link rel="stylesheet" href="bulma.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <p class="navbar-item is-uppercase has-text-weight-bold">Testes de API</p>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click="toggleMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" @click="removeSelectedWorkspace">Voltar para Workspaces</a>
+                    <a class="navbar-item">Relatório do último teste</a>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-primary"><strong>Configurações de teste</strong></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container my-5 px-5">
+            <div class="columns">
+                <div class="column">
+                    <button class="button is-primary" @click="openApiTestModal">Adicionar Teste API</button>
+                </div>
+            </div>
+
+            <div class="columns">
+                <div class="column is-three-fifths">
+                    <div class="box mt-5" v-if="apiTests.length">
+                        <h2 class="title is-5">Testes de API Adicionados</h2>
+                        <div v-for="(test, index) in apiTests" :key="index" class="card mb-2">
+                            <header class="card-header">
+                                <p class="card-header-title">{{ test.url }}</p>
+                                <div class="card-header-icon">
+                                    <label class="checkbox">
+                                        <input type="checkbox" v-model="!test.disabled" @change="toggleDisabled(test)">
+                                        Habilitado
+                                    </label>
+                                </div>
+                            </header>
+                            <div class="card-content">
+                                <div>Method: {{ test.method }}</div>
+                                <div>Content-Type: {{ test.contentType }}</div>
+                                <div>Status Code esperado: {{ test.expectStatusCode }}</div>
+                                <div v-if="test.bodyFields">Data: {{ test.bodyFields | json }}</div>
+                                <div v-if="test.properties">Validações de campos: {{ test.properties | json }}</div>
+                                <div class="buttons mt-5">
+                                    <button class="button is-small" @click="editTest(index)">Editar</button>
+                                    <button class="button is-small" @click="duplicateTest(index)">Duplicar</button>
+                                    <button class="button is-small is-danger"
+                                        @click="openModalDeleteConfirm(index)">Excluir</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="!apiTests.length">
+                        <p>Nenhum teste de API adicionado.</p>
+                    </div>
+                </div>
+                <div class="column has-text-centered">
+                    <button class="button is-primary" @click="startTest" :disabled="isDisabled || !apiTests">Iniciar o
+                        teste</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Adicionar Teste API -->
+        <div class="modal" :class="{ 'is-active': apiTestModal }">
+            <div class="modal-background" @click="closeApiTestModal"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Adicionar Teste API</p>
+                    <button class="delete" aria-label="close" @click="closeApiTestModal"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">URL (obrigatório)</label>
+                        <div class="control">
+                            <input class="input" type="text" v-model.trim="apiTest.url" placeholder="Insira a URL" />
+                        </div>
+                        <p class="help is-danger" v-if="!apiTest.url">A URL é obrigatória.</p>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Método (obrigatório)</label>
+                        <div class="control">
+                            <div class="select">
+                                <select v-model="apiTest.method">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="PATCH">PATCH</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Data / Body (opcional)</label>
+                        <div class="control">
+                            <button class="button" @click="addBodyField">Adicionar Campo</button>
+                        </div>
+                        <div v-for="(bodyField, index) in tempBodyFields" :key="index" class="field has-addons mt-4">
+                            <div class="control">
+                                <input class="input" type="text" v-model="bodyField.key" placeholder="Chave" />
+                            </div>
+                            <div class="control">
+                                <input class="input" type="text" v-model="bodyField.value" placeholder="Valor" />
+                            </div>
+                            <div class="control">
+                                <button class="button is-danger" @click="removeBodyField(index)">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Content-Type</label>
+                        <div class="control">
+                            <div class="select">
+                                <select v-model="apiTest.contentType">
+                                    <option value="application/json">application/json</option>
+                                    <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded
+                                    </option>
+                                    <option value="multipart/form-data">multipart/form-data</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Status Code esperado (obrigatório)</label>
+                        <div class="control">
+                            <input class="input" type="number" v-model="apiTest.expectStatusCode"
+                                placeholder="Digite o Status Code" />
+                        </div>
+                        <p class="help is-danger" v-if="!apiTest.expectStatusCode">O Status Code é obrigatório.</p>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Validação de campo (opcional)</label>
+                        <div class="control">
+                            <button class="button" @click="addPropertyField">Adicionar Validação de campo</button>
+                        </div>
+                        <div v-for="(property, index) in tempProperties" :key="index" class="field has-addons mt-4">
+                            <div class="control">
+                                <input class="input" type="text" v-model="property.key" placeholder="Chave" />
+                            </div>
+                            <div class="control">
+                                <input class="input" type="text" v-model="property.value" placeholder="Valor" />
+                            </div>
+                            <div class="control">
+                                <button class="button is-danger" @click="removePropertyField(index)">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-success" @click="saveApiTest"
+                            :disabled="!isApiTestValid">Salvar</button>
+                        <button class="button" @click="closeApiTestModal">Cancelar</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!-- Fim do modal -->
+
+        <!-- Modal de Confirmação de Exclusão -->
+        <div class="modal" :class="{ 'is-active': modalDeleteConfirm }">
+            <div class="modal-background" @click="closeModalDeleteConfirm"></div>
+            <div class="modal-card" @click.stop>
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Confirmação</p>
+                    <button class="delete" aria-label="close" @click="closeModalDeleteConfirm"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>Você realmente deseja excluir este teste?</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-danger" @click="confirmDeleteAction">Sim</button>
+                        <button class="button" @click="closeModalDeleteConfirm">Cancelar</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!---->
+
+    </div>
+    <script src="vue@2.js"></script>
+    <script src="api.js"></script>
+</body>
+
+</html>

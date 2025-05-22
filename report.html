@@ -115,8 +115,10 @@
                     <button @click="zoomOut" class="button">Diminuir Zoom</button>
                     <button @click="resetZoom" class="button">Resetar Zoom</button>
                 </div>
-                <img :src="selectedScreenshot" alt="Screenshot grande" class="image-zoom"
-                    :style="{ transform: `scale(${currentZoom})` }">
+                <div style="overflow: auto; height: calc(90vh - 0px);">
+                    <img :src="selectedScreenshot" alt="Screenshot grande" class="image-zoom"
+                        :style="{ transform: `scale(${currentZoom})` }">
+                </div>
             </div>
             <button class="modal-close is-large" aria-label="close" @click="closeModal"></button>
         </div>

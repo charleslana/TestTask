@@ -8,7 +8,8 @@
     "build-linux": "electron-builder -l",
     "build-win": "electron-builder -w",
     "build-win-portable": "electron-builder -w portable",
-    "test": "node puppeteer.js"
+    "test": "node puppeteer.js",
+    "api-test": "node api.test.js"
   },
   "keywords": [],
   "author": {

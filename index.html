@@ -105,6 +105,9 @@
                             </div>
                         </draggable>
                     </div>
+                    <div v-if="!workspace.test.actions.length">
+                        <p>Nenhuma ação adicionada</p>
+                    </div>
                 </div>
                 <div class="column has-text-centered">
                     <button class="button is-primary is-large mb-5" @click="startTest"
