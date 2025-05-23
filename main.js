@@ -376,6 +376,9 @@ async function runTestOnce(test, config, base, event, lastTest) {
 async function handleApiTests(apiRequests, apiBase) {
     const results = [];
     for (const apiRequest of apiRequests) {
+        if (apiRequest.disabled) {
+            break;
+        }
         try {
             const result = await apiBase.request(apiRequest);
             results.push({ url: apiRequest.url, duration: result.duration, error: null });
@@ -383,6 +386,7 @@ async function handleApiTests(apiRequests, apiBase) {
             results.push({ url: apiRequest.url, duration: null, error: error.message });
         }
     }
+    return results;
 }
 
 ipcMain.on('start-puppeteer', async (event, { test, config }) => {
@@ -491,12 +495,16 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
 
 ipcMain.on('start-api-tests', async (event, apiRequests) => {
     console.log('Iniciando testes de API!');
+    console.log(apiRequests);
 
     process.env.ELECTRON_START = 'puppeteer';
 
     const electronPath = process.execPath;
 
     electronProcess = childProcess.spawn(electronPath, ['.', '--remote-debugging-port=9222']);
+
+    event.sender.send('disable-start-button');
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const browser = await puppeteer.connect({
         browserURL: 'http://localhost:9222',
@@ -508,7 +516,7 @@ ipcMain.on('start-api-tests', async (event, apiRequests) => {
 
     try {
 
-        await handleApiTests(apiRequests, apiBase);
+        const results = await handleApiTests(apiRequests, apiBase);
 
         event.sender.send('api-tests-results', results);
     } catch (error) {
@@ -521,6 +529,8 @@ ipcMain.on('start-api-tests', async (event, apiRequests) => {
             electronProcess.kill();
         }
     }
+
+    event.sender.send('enable-start-button');
 });
 
 ipcMain.on('about', async (event) => {

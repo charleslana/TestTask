@@ -2,6 +2,8 @@ new Vue({
     el: '#app',
     data: {
         isDisabled: false,
+        testNotification: false,
+        testFail: '',
         apiTests: [],
         apiTest: {
             url: '',
@@ -80,9 +82,12 @@ new Vue({
             this.tempProperties.splice(index, 1);
         },
         editTest(index) {
-            this.apiTest = { ...this.apiTests[index] };
-            this.tempBodyFields = [...this.apiTest.bodyFields];
-            this.tempProperties = [...this.apiTest.properties];
+            const test = this.apiTests[index];
+            this.apiTest = { ...test };
+
+            this.tempBodyFields = test.bodyFields.map(field => ({ ...field }));
+            this.tempProperties = test.properties.map(prop => ({ ...prop }));
+
             this.editIndex = index;
             this.apiTestModal = true;
         },
@@ -119,7 +124,10 @@ new Vue({
             this.tempProperties = [];
         },
         startTest() {
-            console.log('iniciando');
+            this.isDisabled = true;
+            this.testNotification = false;
+            this.testFail = '';
+            window.electron.ipcRenderer.send('start-api-tests', this.apiTests);
         },
         openModalDeleteConfirm(index) {
             this.deleteIndex = index;
@@ -142,6 +150,9 @@ new Vue({
         }
     },
     mounted() {
+        window.electron.ipcRenderer.on('enable-start-button', () => {
+            this.isDisabled = false;
+        });
         this.loadApiTests();
     }
 });

@@ -26,7 +26,7 @@ export class ApiBase {
             if (response) {
                 if (response.status() !== api.expectStatusCode) {
                     throw new Error(
-                        `Falha na requisição ${api.type} para ${response.url()}. Status ${response.status()}. Response ${await response.text()}`
+                        `Falha na requisição ${api.method} para ${response.url()}. Status ${response.status()}. Response ${await response.text()}`
                     );
                 }
                 console.log(await this.getLog(response));
@@ -34,12 +34,12 @@ export class ApiBase {
                     const responseBody = await response.json();
                     this.validateProperties(responseBody, api.properties);
                 }
-                console.log(`Sucesso na requisição ${api.type}`);
+                console.log(`Sucesso na requisição ${api.method}`);
             } else {
-                throw new Error(`Não foi possível obter resposta da requisição ${api.type}`);
+                throw new Error(`Não foi possível obter resposta da requisição ${api.method}`);
             }
         } catch (e) {
-            error = `Erro durante a execução da requisição ${api.type}: ${e}`;
+            error = `Erro durante a execução da requisição ${api.method}: ${e}`;
             console.log(error);
         } finally {
             const endTime = Date.now();
@@ -50,35 +50,28 @@ export class ApiBase {
     }
 
     validateProperties(responseData, properties) {
-        if (!properties || typeof properties !== 'object') return;
+        if (!properties || !properties.length) {
+            return; // Retorne se não houver propriedades
+        }
 
-        for (const [key, expectedValue] of Object.entries(properties)) {
+        for (const { key, value: expectedValue } of properties) {
+            console.log(`Verificando propriedade: ${key}, valor esperado:`, expectedValue);
+
             if (!(key in responseData)) {
                 throw new Error(`A propriedade '${key}' não está presente na resposta da API.`);
             }
 
-            const actualValue = responseData[key];
+            const actualValue = JSON.stringify(responseData[key]);
 
-            // Verifica se o valor esperado é um array
-            if (Array.isArray(expectedValue)) {
-                if (!Array.isArray(actualValue)) {
-                    throw new Error(`A propriedade '${key}' esperava um array, mas recebeu um ${typeof actualValue}.`);
-                }
-
-                // Verifica cada item do array
-                expectedValue.forEach((expectedItem, index) => {
-                    if (!actualValue[index] || actualValue[index] !== expectedItem) {
-                        throw new Error(`O item[${index}] da propriedade '${key}' é '${actualValue[index]}', mas esperado '${expectedItem}'.`);
-                    }
-                });
-
-            } else if (typeof expectedValue === 'object' && expectedValue !== null) {
-                // Verifica se o valor esperado é um objeto
-                if (typeof actualValue !== 'object' || actualValue === null || Array.isArray(actualValue)) {
+            // Se o valor esperado for um objeto, vamos compará-los como strings
+            if (typeof expectedValue === 'object' && expectedValue !== null) {
+                if (typeof actualValue !== 'object' || actualValue === null) {
                     throw new Error(`A propriedade '${key}' esperava um objeto, mas recebeu um ${typeof actualValue}.`);
                 }
-                // Validar as propriedades do objeto
-                this.validateProperties(actualValue, expectedValue);
+                // Comparando objetos
+                if (actualValue !== expectedValue) {
+                    throw new Error(`Valor da propriedade '${key}' é '${actualValue}', mas esperado '${expectedValue}'.`);
+                }
             } else {
                 // Validação de igualdade simples
                 if (actualValue !== expectedValue) {
@@ -101,8 +94,8 @@ export class ApiBase {
         }
         this.page.once('request', interceptedRequest => {
             interceptedRequest.continue({
-                method: api.type,
-                postData: this.getData(api),
+                method: api.method,
+                postData: api.bodyFields ? this.getData(api) : null,
                 headers: {
                     ...interceptedRequest.headers(),
                     ...headers,
@@ -119,16 +112,25 @@ export class ApiBase {
         const form = new FormData();
         switch (api.contentType) {
             case 'application/json':
-                return JSON.stringify(api.data);
+                const jsonBody = {};
+                api.bodyFields.forEach(field => {
+                    jsonBody[field.key] = field.value;
+                });
+                return JSON.stringify(jsonBody);
+
             case 'application/x-www-form-urlencoded':
-                return new URLSearchParams(api.data).toString();
+                const urlParams = new URLSearchParams();
+                api.bodyFields.forEach(field => {
+                    urlParams.append(field.key, field.value);
+                });
+                return urlParams.toString();
+
             case 'multipart/form-data':
-                for (const key in api.data) {
-                    if (Object.prototype.hasOwnProperty.call(api.data, key)) {
-                        form.append(key, api.data[key]);
-                    }
-                }
+                api.bodyFields.forEach(field => {
+                    form.append(field.key, field.value);
+                });
                 return this.formDataToMultipartString(form);
+
             default:
                 return '';
         }

@@ -46,11 +46,12 @@
                 <div class="column is-three-fifths">
                     <div class="box mt-5" v-if="apiTests.length">
                         <h2 class="title is-5">Testes de API Adicionados</h2>
-                        <div v-for="(test, index) in apiTests" :key="index" class="card mb-2">
+                        <div v-for="(test, index) in apiTests" :key="index"
+                            :class="['card', 'mb-2', { 'disabled-card': test.disabled }]">
                             <header class="card-header">
                                 <p class="card-header-title">{{ test.url }}</p>
                                 <div class="card-header-icon">
-                                    <label class="checkbox">
+                                    <label class="checkbox is-clickable">
                                         <input type="checkbox" v-model="!test.disabled" @change="toggleDisabled(test)">
                                         Habilitado
                                     </label>

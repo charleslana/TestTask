@@ -1,7 +1,7 @@
 export class ApiDetail {
-    constructor(url, type, data, contentType, expectStatusCode, properties) {
+    constructor(url, method, data, contentType, expectStatusCode, properties) {
         this.url = url;
-        this.type = type;
+        this.method = method;
         this.data = data || {};
         this.contentType = contentType;
         this.expectStatusCode = expectStatusCode;
