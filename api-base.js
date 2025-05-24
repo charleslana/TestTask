@@ -32,6 +32,14 @@ export class ApiBase {
                 console.log(await this.getLog(response));
                 if (api.properties) {
                     const responseBody = await response.json();
+                    if (api.properties) {
+                        api.properties = api.properties.map(({ key, value }) => {
+                            if (key === '$' && typeof value === 'string') {
+                                return { key, value: [value] };
+                            }
+                            return { key, value };
+                        });
+                    }
                     this.validateProperties(responseBody, api.properties);
                 }
                 console.log(`Sucesso na requisição ${api.method}`);
@@ -49,36 +57,75 @@ export class ApiBase {
         return { duration, error };
     }
 
+    resolvePath(obj, path) {
+        const segments = path
+            .replace(/\[(\d+)\]/g, '.$1')
+            .replace(/^\$/, '')
+            .replace(/^\./, '')
+            .split('.');
+
+        return segments.reduce((acc, segment) => {
+            if (acc && typeof acc === 'object' && segment in acc) {
+                return acc[segment];
+            }
+            return undefined;
+        }, obj);
+    }
+
     validateProperties(responseData, properties) {
-        if (!properties || !properties.length) {
-            return; // Retorne se não houver propriedades
-        }
+        if (!properties || !properties.length) return;
 
         for (const { key, value: expectedValue } of properties) {
             console.log(`Verificando propriedade: ${key}, valor esperado:`, expectedValue);
 
-            if (!(key in responseData)) {
+            let actualValue;
+
+            try {
+                if (key === '$') {
+                    // Se root for array, usa direto
+                    if (Array.isArray(responseData)) {
+                        actualValue = responseData;
+                    } else if (Array.isArray(responseData.data)) {
+                        // Caso comum: pegar a propriedade "data" que é array
+                        actualValue = responseData.data;
+                    } else if (Array.isArray(responseData.json)) {
+                        // Alternativa: "json" pode ter o array
+                        actualValue = responseData.json;
+                    } else {
+                        throw new Error(`Validação com "$" exige que o root ou 'data' ou 'json' seja um array.`);
+                    }
+                } else if (key.startsWith('$')) {
+                    // Exemplo $.data.something
+                    const path = key.slice(2); // remove "$."
+                    actualValue = this.resolvePath(responseData, path);
+                } else if (key.startsWith('.')) {
+                    const path = key.slice(1);
+                    actualValue = responseData?.[path];
+                } else {
+                    actualValue = key.split('.').reduce((acc, part) => {
+                        if (part.includes('[')) {
+                            const [arr, index] = part.split(/\[|\]/).filter(Boolean);
+                            return acc?.[arr]?.[parseInt(index)];
+                        }
+                        return acc?.[part];
+                    }, responseData);
+                }
+            } catch (e) {
+                throw new Error(`Erro ao acessar a propriedade '${key}': ${e.message}`);
+            }
+
+            if (actualValue === undefined) {
                 throw new Error(`A propriedade '${key}' não está presente na resposta da API.`);
             }
 
-            const actualValue = JSON.stringify(responseData[key]);
+            const actualStr = JSON.stringify(actualValue);
+            const expectedStr = JSON.stringify(expectedValue);
 
-            // Se o valor esperado for um objeto, vamos compará-los como strings
-            if (typeof expectedValue === 'object' && expectedValue !== null) {
-                if (typeof actualValue !== 'object' || actualValue === null) {
-                    throw new Error(`A propriedade '${key}' esperava um objeto, mas recebeu um ${typeof actualValue}.`);
-                }
-                // Comparando objetos
-                if (actualValue !== expectedValue) {
-                    throw new Error(`Valor da propriedade '${key}' é '${actualValue}', mas esperado '${expectedValue}'.`);
-                }
-            } else {
-                // Validação de igualdade simples
-                if (actualValue !== expectedValue) {
-                    throw new Error(`Valor da propriedade '${key}' é '${actualValue}', mas esperado '${expectedValue}'.`);
-                }
+            if (actualStr !== expectedStr) {
+                throw new Error(`Valor da propriedade '${key}' é '${actualStr}', mas esperado '${expectedStr}'.`);
             }
         }
+
         console.log('Propriedades validadas com sucesso');
     }
 
@@ -109,12 +156,42 @@ export class ApiBase {
     }
 
     getData(api) {
-        const form = new FormData();
+        const buildNestedObject = (target, path, value) => {
+            const keys = path
+                .replace(/\[(\d+)\]/g, '.$1')
+                .replace(/^\$/, '')
+                .replace(/^\./, '')
+                .split('.');
+
+            let current = target;
+            keys.forEach((key, index) => {
+                const isLast = index === keys.length - 1;
+                const nextKey = keys[index + 1];
+
+                if (!isLast) {
+                    const isArray = /^\d+$/.test(nextKey);
+                    if (!(key in current)) {
+                        current[key] = isArray ? [] : {};
+                    }
+                    current = current[key];
+                } else {
+                    current[key] = value;
+                }
+            });
+        };
+
         switch (api.contentType) {
             case 'application/json':
+                if (api.bodyFields.length === 1 && api.bodyFields[0].key === '$') {
+                    const val = api.bodyFields[0].value;
+                    if (typeof val === 'string') {
+                        return JSON.stringify([val]);
+                    }
+                    return JSON.stringify(val);
+                }
                 const jsonBody = {};
                 api.bodyFields.forEach(field => {
-                    jsonBody[field.key] = field.value;
+                    buildNestedObject(jsonBody, field.key, field.value);
                 });
                 return JSON.stringify(jsonBody);
 
@@ -126,6 +203,7 @@ export class ApiBase {
                 return urlParams.toString();
 
             case 'multipart/form-data':
+                const form = new FormData();
                 api.bodyFields.forEach(field => {
                     form.append(field.key, field.value);
                 });

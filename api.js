@@ -60,15 +60,6 @@ new Vue({
             this.closeApiTestModal();
             this.saveApiTests();
         },
-        buildBody() {
-            const body = {};
-            this.apiTest.bodyFields.forEach(field => {
-                if (field.key) {
-                    body[field.key] = field.value || '';
-                }
-            });
-            return body;
-        },
         addBodyField() {
             this.tempBodyFields.push({ key: '', value: '' });
         },

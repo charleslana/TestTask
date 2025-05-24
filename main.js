@@ -377,7 +377,7 @@ async function handleApiTests(apiRequests, apiBase) {
     const results = [];
     for (const apiRequest of apiRequests) {
         if (apiRequest.disabled) {
-            break;
+            continue;
         }
         try {
             const result = await apiBase.request(apiRequest);

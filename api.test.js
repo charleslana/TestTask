@@ -22,10 +22,10 @@ function delay(time) {
 
     const apiRequests = [
         new ApiDetail('https://postman-echo.com/get', 'GET', null, 'application/json', 200),
-        new ApiDetail('https://postman-echo.com/post', 'POST', { foo: 'FOO', bar: 'BAR' }, 'application/json', 200, { data: { foo: 'FOO', bar: 'BAR2' }, }),
-        new ApiDetail('https://reqres.in/api/users/2', 'PUT', { name: 'NAME', job: 'JOB' }, 'application/json', 200),
-        new ApiDetail('https://reqres.in/api/login', 'POST', { email: 'george.bluth@reqres.in', password: 'PASSWORD' }, 'application/json', 200),
-        new ApiDetail('https://reqres.in/api/users/2', 'PATCH', { name: 'NAME', job: 'JOB' }, 'application/json', 200),
+        new ApiDetail('https://postman-echo.com/post', 'POST', [{ key: '.foo', value: 'FOO' }, { key: '.bar', value: 'BAR' }], 'application/json', 200, [{ key: 'data.foo', value: 'FOO' }, { key: 'data.bar', value: 'BAR2' }]),
+        new ApiDetail('https://reqres.in/api/users/2', 'PUT', [{ key: '.name', value: 'NAME' }, { key: '.job', value: 'JOB' }], 'application/json', 200),
+        new ApiDetail('https://reqres.in/api/login', 'POST', [{ key: '.email', value: 'george.bluth@reqres.in' }, { key: '.password', value: 'PASSWORD' }], 'application/json', 200),
+        new ApiDetail('https://reqres.in/api/users/2', 'PATCH', [{ key: '.name', value: 'NAME' }, { key: '.job', value: 'JOB' }], 'application/json', 200),
         new ApiDetail('https://postman-echo.com/delete', 'DELETE', null, 'application/json', 200),
     ];
 
