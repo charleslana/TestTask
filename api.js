@@ -4,6 +4,7 @@ new Vue({
         isDisabled: false,
         testNotification: false,
         testFail: '',
+        totalTime: 0,
         apiTests: [],
         apiTest: {
             url: '',
@@ -163,11 +164,22 @@ new Vue({
                 const { disabled, ...rest } = f;
                 return rest;
             });
-        }
+        },
+        openLastTestReport() {
+            window.electron.ipcRenderer.send('report');
+        },
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {
             this.isDisabled = false;
+        });
+        window.electron.ipcRenderer.on('test-failed', (error) => {
+            this.testFail = error;
+            this.testNotification = true;
+        });
+        window.electron.ipcRenderer.on('test-completed', (lastTest) => {
+            //salvar teste aqui
+            this.testNotification = true;
         });
         this.loadApiTests();
     }

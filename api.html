@@ -78,8 +78,30 @@
                     </div>
                 </div>
                 <div class="column has-text-centered">
-                    <button class="button is-primary" @click="startTest" :disabled="isDisabled || !apiTests">Iniciar o
+                    <button class="button is-primary mb-5" @click="startTest"
+                        :disabled="isDisabled || !apiTests">Iniciar o
                         teste</button>
+                    <span v-if="isDisabled">
+                        <p>Problemas no teste?</p><a href="api.html" class="link">Recarregar</a>
+                    </span>
+                    <div class="is-flex is-justify-content-center" v-if="testNotification">
+                        <article :class="testFail ? 'message is-danger' : 'message is-success'">
+                            <div class="message-header">
+                                <p>{{ testFail ? 'Erro!' : 'Sucesso!' }}</p>
+                                <button class="delete" aria-label="delete" @click="testNotification = false"></button>
+                            </div>
+                            <div class="message-body">
+                                <p class="has-text-weight-bold mb-2" v-if="testFail">O teste falhou!<br />Duração:
+                                    {{ totalTime }}<br />{{testFail}}
+                                </p>
+                                <p class="has-text-weight-bold mb-2" v-else>O Teste foi executado com
+                                    sucesso!<br />Duração: {{ totalTime }}</p>
+                                <button class="button" :class="testFail ? 'is-danger' : 'is-success'"
+                                    @click="openLastTestReport">Ver
+                                    resultados</button>
+                            </div>
+                        </article>
+                    </div>
                 </div>
             </div>
         </div>

@@ -49,6 +49,7 @@ export class ApiBase {
         } catch (e) {
             error = `Erro durante a execução da requisição ${api.method}: ${e}`;
             console.log(error);
+            throw new Error(error);
         } finally {
             const endTime = Date.now();
             duration = (endTime - startTime) / 1000;

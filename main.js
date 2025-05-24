@@ -515,13 +515,20 @@ ipcMain.on('start-api-tests', async (event, apiRequests) => {
     const apiBase = new ApiBase(page);
 
     try {
-
         const results = await handleApiTests(apiRequests, apiBase);
+        const hasErrors = results.some(r => r.error != null);
+        if (hasErrors) {
+            const errors = results
+                .filter(r => r.error != null)
+                .map(r => ({ url: r.url, error: r.error }));
 
-        event.sender.send('api-tests-results', results);
+            event.sender.send('test-failed', errors);
+            return;
+        }
+        event.sender.send('test-completed', results);
     } catch (error) {
         console.error('Erro ao executar testes de API:', error);
-        event.sender.send('api-tests-results', [{ error: 'Erro ao iniciar os testes de API' }]);
+        event.sender.send('test-failed', [{ error: 'Erro ao iniciar os testes de API' }]);
     } finally {
         await browser.close();
         await browser.disconnect();
