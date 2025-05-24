@@ -175,15 +175,23 @@
                 <section class="modal-card-body">
                     <!-- IFrame selector -->
                     <div class="field" v-if="actionCurrent && ['iframeType'].includes(actionCurrent.type)">
-                        <label class="label">IFrame selector</label>
+                        <label class="label is-flex is-align-items-center">
+                            IFrame seletor
+                            <i class="material-icons ml-2 is-clickable" v-if="actionLabel === 'Seletor'"
+                                @click="isModalInfo = true">info</i>
+                        </label>
                         <div class="control">
                             <input class="input" type="text" v-model.trim="actionForm.selector2"
-                                placeholder="IFrame selector" />
+                                placeholder="IFrame seletor" />
                         </div>
                     </div>
                     <!-- Seletor ou URL -->
                     <div class="field" v-if="actionCurrent?.type !== 'enter' && actionCurrent?.type !== 'reload'">
-                        <label class="label">{{ actionLabel }}</label>
+                        <label class="label is-flex is-align-items-center">
+                            {{ actionLabel }}
+                            <i class="material-icons ml-2 is-clickable" v-if="actionLabel === 'Seletor'"
+                                @click="isModalInfo = true">info</i>
+                        </label>
                         <div class="control">
                             <input class="input" type="text" v-model.trim="actionForm.selector"
                                 :placeholder="actionPlaceholder" />
@@ -267,6 +275,23 @@
                     <button class="button" @click="closeUrlModal">Fechar</button>
                 </footer>
             </div>
+        </div>
+        <!---->
+
+        <!-- Modal info -->
+        <div class="modal" :class="{ 'is-active': isModalInfo }">
+            <div class="modal-background" @click="isModalInfo = false"></div>
+            <div class="modal-content">
+                <div class="box">
+                    <div class="mb-5">Os seletores são elemento DOM das páginas HTML, veja alguns exemplos de como
+                        obter:</div>
+                    <p class="has-text-weight-bold">#id</p>
+                    <p class="has-text-weight-bold">.classes</p>
+                    <p class="has-text-weight-bold">\\xpath</p>
+                    <p class="has-text-weight-bold">tags como h1, div entre outros</p>
+                </div>
+            </div>
+            <button class="modal-close is-large" aria-label="close" @click="isModalInfo = false"></button>
         </div>
         <!---->
     </div>

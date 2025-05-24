@@ -33,11 +33,11 @@ export class ApiBase {
                 if (api.properties) {
                     const responseBody = await response.json();
                     if (api.properties) {
-                        api.properties = api.properties.map(({ key, value }) => {
+                        api.properties = api.properties.map(({ key, value, disabled }) => {
                             if (key === '$' && typeof value === 'string') {
-                                return { key, value: [value] };
+                                return { key, value: [value], disabled };
                             }
-                            return { key, value };
+                            return { key, value, disabled };
                         });
                     }
                     this.validateProperties(responseBody, api.properties);
@@ -75,7 +75,8 @@ export class ApiBase {
     validateProperties(responseData, properties) {
         if (!properties || !properties.length) return;
 
-        for (const { key, value: expectedValue } of properties) {
+        for (const { key, value: expectedValue, disabled } of properties) {
+            if (disabled) continue;
             console.log(`Verificando propriedade: ${key}, valor esperado:`, expectedValue);
 
             let actualValue;
@@ -190,21 +191,21 @@ export class ApiBase {
                     return JSON.stringify(val);
                 }
                 const jsonBody = {};
-                api.bodyFields.forEach(field => {
+                api.bodyFields.filter(field => !field.disabled).forEach(field => {
                     buildNestedObject(jsonBody, field.key, field.value);
                 });
                 return JSON.stringify(jsonBody);
 
             case 'application/x-www-form-urlencoded':
                 const urlParams = new URLSearchParams();
-                api.bodyFields.forEach(field => {
+                api.bodyFields.filter(field => !field.disabled).forEach(field => {
                     urlParams.append(field.key, field.value);
                 });
                 return urlParams.toString();
 
             case 'multipart/form-data':
                 const form = new FormData();
-                api.bodyFields.forEach(field => {
+                api.bodyFields.filter(field => !field.disabled).forEach(field => {
                     form.append(field.key, field.value);
                 });
                 return this.formDataToMultipartString(form);

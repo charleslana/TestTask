@@ -19,7 +19,8 @@ new Vue({
         apiTestModal: false,
         editIndex: null,
         modalDeleteConfirm: false,
-        deleteIndex: null
+        deleteIndex: null,
+        isModalInfo: false,
     },
     computed: {
         isApiTestValid() {
@@ -42,6 +43,15 @@ new Vue({
             };
             this.editIndex = null;
             this.apiTestModal = true;
+            this.resetScrollModal();
+        },
+        resetScrollModal() {
+            this.$nextTick(() => {
+                const modalBody = document.getElementById('modal-card-body');
+                if (modalBody) {
+                    modalBody.scrollTop = 0;
+                }
+            });
         },
         closeApiTestModal() {
             this.apiTestModal = false;
@@ -61,16 +71,24 @@ new Vue({
             this.saveApiTests();
         },
         addBodyField() {
-            this.tempBodyFields.push({ key: '', value: '' });
+            this.tempBodyFields.push({ key: '', value: '', disabled: false });
         },
         removeBodyField(index) {
             this.tempBodyFields.splice(index, 1);
         },
+        toggleBodyFieldDisable(index) {
+            const field = this.tempBodyFields[index];
+            field.disabled = !field.disabled;
+        },
         addPropertyField() {
-            this.tempProperties.push({ key: '', value: '' });
+            this.tempProperties.push({ key: '', value: '', disabled: false });
         },
         removePropertyField(index) {
             this.tempProperties.splice(index, 1);
+        },
+        togglePropertyFieldDisable(index) {
+            const field = this.tempProperties[index];
+            field.disabled = !field.disabled;
         },
         editTest(index) {
             const test = this.apiTests[index];
@@ -81,6 +99,7 @@ new Vue({
 
             this.editIndex = index;
             this.apiTestModal = true;
+            this.resetScrollModal();
         },
         duplicateTest(index) {
             const testToDuplicate = { ...this.apiTests[index] };
@@ -138,6 +157,12 @@ new Vue({
         toggleDisabled(test) {
             test.disabled = !test.disabled;
             this.saveApiTests();
+        },
+        cleanFields(fields) {
+            return (fields || []).map(f => {
+                const { disabled, ...rest } = f;
+                return rest;
+            });
         }
     },
     mounted() {

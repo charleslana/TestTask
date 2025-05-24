@@ -45,6 +45,7 @@ new Vue({
         urls: [],
         newUrl: '',
         editUrlIndex: null,
+        isModalInfo: false,
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {
