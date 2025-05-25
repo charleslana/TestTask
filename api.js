@@ -26,6 +26,9 @@ new Vue({
     computed: {
         isApiTestValid() {
             return this.apiTest.url && this.apiTest.method && this.apiTest.expectStatusCode;
+        },
+        hasEnabledTests() {
+            return this.apiTests.some(test => !test.disabled);
         }
     },
     methods: {
@@ -40,7 +43,8 @@ new Vue({
                 bodyFields: [],
                 contentType: 'application/json',
                 expectStatusCode: 200,
-                properties: []
+                properties: [],
+                disabled: false,
             };
             this.editIndex = null;
             this.apiTestModal = true;

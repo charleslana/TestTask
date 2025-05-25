@@ -535,9 +535,8 @@ ipcMain.on('start-api-tests', async (event, apiRequests) => {
         if (electronProcess) {
             electronProcess.kill();
         }
+        event.sender.send('enable-start-button');
     }
-
-    event.sender.send('enable-start-button');
 });
 
 ipcMain.on('about', async (event) => {
