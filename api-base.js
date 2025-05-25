@@ -3,8 +3,11 @@
  * @typedef {import('puppeteer-core').Page} Page
  */
 
-export class ApiBase {
+import { Base } from './base.js';
+
+export class ApiBase extends Base {
     constructor(page) {
+        super(page);
         this.page = page;
         this.page.setDefaultTimeout(this.defaultTimeout);
     }
@@ -18,6 +21,9 @@ export class ApiBase {
     async request(api) {
         const startTime = Date.now();
         let duration = 0;
+        const description = `Requisição ${api.method} para ${api.url}`;
+        let success = null;
+        let screenshot = null;
         let error;
         try {
             await this.page.setRequestInterception(true);
@@ -42,20 +48,21 @@ export class ApiBase {
                     }
                     this.validateProperties(responseBody, api.properties);
                 }
-                console.log(`Sucesso na requisição ${api.method}`);
+                success = `Sucesso na requisição ${api.method}`;
+                console.log(success);
             } else {
                 throw new Error(`Não foi possível obter resposta da requisição ${api.method}`);
             }
         } catch (e) {
             error = `Erro durante a execução da requisição ${api.method}: ${e}`;
             console.log(error);
-            throw new Error(error);
         } finally {
             const endTime = Date.now();
             duration = (endTime - startTime) / 1000;
             await this.page.setRequestInterception(false);
+            screenshot = await this.getScreenshot();
         }
-        return { duration, error };
+        return { duration, error, success, description, screenshot };
     }
 
     resolvePath(obj, path) {

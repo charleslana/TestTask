@@ -172,17 +172,29 @@ new Vue({
         openLastTestReport() {
             window.electron.ipcRenderer.send('report');
         },
+        formatExecutionTime(ms) {
+            if (ms < 1000) {
+                return `${ms.toFixed(2)}ms`;
+            }
+            const seconds = ms / 1000;
+            return `${seconds.toFixed(2)}s`;
+        },
+        saveLastTest(lastTest) {
+            this.totalTime = this.formatExecutionTime(lastTest.totalTime);
+            localStorage.setItem('lastApiTest', JSON.stringify(lastTest));
+        }
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {
             this.isDisabled = false;
         });
-        window.electron.ipcRenderer.on('test-failed', (error) => {
+        window.electron.ipcRenderer.on('test-failed', (error, lastTest) => {
+            this.saveLastTest(lastTest);
             this.testFail = error;
             this.testNotification = true;
         });
         window.electron.ipcRenderer.on('test-completed', (lastTest) => {
-            //salvar teste aqui
+            this.saveLastTest(lastTest);
             this.testNotification = true;
         });
         this.loadApiTests();

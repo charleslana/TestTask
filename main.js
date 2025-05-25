@@ -375,19 +375,23 @@ async function runTestOnce(test, config, base, event, lastTest) {
 
 async function handleApiTests(apiRequests, apiBase) {
     const results = [];
+
     for (const apiRequest of apiRequests) {
-        if (apiRequest.disabled) {
-            continue;
-        }
-        try {
-            const result = await apiBase.request(apiRequest);
-            results.push({ url: apiRequest.url, duration: result.duration, error: null });
-        } catch (error) {
-            results.push({ url: apiRequest.url, duration: null, error: error.message });
-        }
+        if (apiRequest.disabled) continue;
+
+        const result = await apiBase.request(apiRequest);
+        results.push({
+            url: apiRequest.url,
+            duration: result.duration,
+            error: result.error,
+            description: result.description,
+            screenshot: result.screenshot
+        });
     }
+
     return results;
 }
+
 
 ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     console.log('Iniciando automação no Puppeteer!');
@@ -513,19 +517,32 @@ ipcMain.on('start-api-tests', async (event, apiRequests) => {
     const pages = await browser.pages();
     const page = pages[0];
     const apiBase = new ApiBase(page);
+    const lastTest = {
+        tests: [],
+        totalTime: 0,
+        lastScreenshot: null,
+    };
 
     try {
         const results = await handleApiTests(apiRequests, apiBase);
+
+        lastTest.tests = results;
+        const executionTime = lastTest.tests.reduce((sum, current) => {
+            return sum + (current.duration || 0);
+        }, 0);
+        lastTest.totalTime = executionTime;
+        console.log(`O teste levou ${executionTime} ms para executar.`);
+
         const hasErrors = results.some(r => r.error != null);
         if (hasErrors) {
             const errors = results
                 .filter(r => r.error != null)
                 .map(r => ({ url: r.url, error: r.error }));
 
-            event.sender.send('test-failed', errors);
+            event.sender.send('test-failed', errors, lastTest);
             return;
         }
-        event.sender.send('test-completed', results);
+        event.sender.send('test-completed', lastTest);
     } catch (error) {
         console.error('Erro ao executar testes de API:', error);
         event.sender.send('test-failed', [{ error: 'Erro ao iniciar os testes de API' }]);

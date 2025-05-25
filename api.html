@@ -53,7 +53,7 @@
                                     <p class="card-header-title">{{ test.url }}</p>
                                     <div class="card-header-icon" style="cursor: move;">
                                         <label class="checkbox is-clickable">
-                                            <input type="checkbox" v-model="!test.disabled"
+                                            <input type="checkbox" :checked="!test.disabled"
                                                 @change="toggleDisabled(test)">
                                             Habilitado
                                         </label>
