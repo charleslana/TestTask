@@ -22,7 +22,7 @@
             <div id="navbarBasicExample" class="navbar-menu">
                 <div class="navbar-start">
                     <a class="navbar-item" @click="removeSelectedWorkspace">Voltar para Workspaces</a>
-                    <a class="navbar-item">Relatório do último teste</a>
+                    <a class="navbar-item" @click="openLastTestReport">Relatório do último teste</a>
                 </div>
 
                 <div class="navbar-end">
@@ -46,32 +46,35 @@
                 <div class="column is-three-fifths">
                     <div class="box mt-5" v-if="apiTests.length">
                         <h2 class="title is-5">Testes de API Adicionados</h2>
-                        <div v-for="(test, index) in apiTests" :key="index"
-                            :class="['card', 'mb-2', { 'disabled-card': test.disabled }]">
-                            <header class="card-header">
-                                <p class="card-header-title">{{ test.url }}</p>
-                                <div class="card-header-icon">
-                                    <label class="checkbox is-clickable">
-                                        <input type="checkbox" v-model="!test.disabled" @change="toggleDisabled(test)">
-                                        Habilitado
-                                    </label>
-                                </div>
-                            </header>
-                            <div class="card-content">
-                                <div>Method: {{ test.method }}</div>
-                                <div>Content-Type: {{ test.contentType }}</div>
-                                <div>Status Code esperado: {{ test.expectStatusCode }}</div>
-                                <div v-if="test.bodyFields">Data: {{ cleanFields(test.bodyFields) }}</div>
-                                <div v-if="test.properties">Validações de campos: {{ cleanFields(test.properties) }}
-                                </div>
-                                <div class="buttons mt-5">
-                                    <button class="button is-small" @click="editTest(index)">Editar</button>
-                                    <button class="button is-small" @click="duplicateTest(index)">Duplicar</button>
-                                    <button class="button is-small is-danger"
-                                        @click="openModalDeleteConfirm(index)">Excluir</button>
+                        <draggable v-model="apiTests" :options="{ animation: 150 }">
+                            <div v-for="(test, index) in apiTests" :key="index"
+                                :class="['card', 'mb-2', { 'disabled-card': test.disabled }]" style="cursor: move;">
+                                <header class="card-header">
+                                    <p class="card-header-title">{{ test.url }}</p>
+                                    <div class="card-header-icon" style="cursor: move;">
+                                        <label class="checkbox is-clickable">
+                                            <input type="checkbox" v-model="!test.disabled"
+                                                @change="toggleDisabled(test)">
+                                            Habilitado
+                                        </label>
+                                    </div>
+                                </header>
+                                <div class="card-content">
+                                    <div>Method: {{ test.method }}</div>
+                                    <div>Content-Type: {{ test.contentType }}</div>
+                                    <div>Status Code esperado: {{ test.expectStatusCode }}</div>
+                                    <div v-if="test.bodyFields">Data: {{ cleanFields(test.bodyFields) }}</div>
+                                    <div v-if="test.properties">Validações de campos: {{ cleanFields(test.properties) }}
+                                    </div>
+                                    <div class="buttons mt-5">
+                                        <button class="button is-small" @click="editTest(index)">Editar</button>
+                                        <button class="button is-small" @click="duplicateTest(index)">Duplicar</button>
+                                        <button class="button is-small is-danger"
+                                            @click="openModalDeleteConfirm(index)">Excluir</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </draggable>
                     </div>
                     <div v-if="!apiTests.length">
                         <p>Nenhum teste de API adicionado.</p>
@@ -91,11 +94,20 @@
                                 <button class="delete" aria-label="delete" @click="testNotification = false"></button>
                             </div>
                             <div class="message-body">
-                                <p class="has-text-weight-bold mb-2" v-if="testFail">O teste falhou!<br />Duração:
-                                    {{ totalTime }}<br />{{testFail}}
+                                <div v-if="testFail.length">
+                                    <p class="has-text-weight-bold mb-2">O teste falhou!</p>
+                                    <p class="mt-2"><strong>Duração:</strong> {{ totalTime }}</p>
+                                    <ul class="mb-2">
+                                        <li v-for="(fail, index) in testFail" :key="index">
+                                            <strong>URL:</strong> {{ fail.url }}<br>
+                                            <strong>Erro:</strong> {{ fail.error }}
+                                            <div class="mb-2" v-if="index < testFail.length - 1"></div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <p class="has-text-weight-bold mb-2" v-else>
+                                    O Teste foi executado com sucesso!<br />Duração: {{ totalTime }}
                                 </p>
-                                <p class="has-text-weight-bold mb-2" v-else>O Teste foi executado com
-                                    sucesso!<br />Duração: {{ totalTime }}</p>
                                 <button class="button" :class="testFail ? 'is-danger' : 'is-success'"
                                     @click="openLastTestReport">Ver
                                     resultados</button>
@@ -274,6 +286,10 @@
         <!---->
     </div>
     <script src="vue@2.js"></script>
+    <!-- Sortable.js -->
+    <script src="Sortable.min.js"></script>
+    <!-- Vue.Draggable -->
+    <script src="vuedraggable.umd.min.js"></script>
     <script src="api.js"></script>
 </body>
 

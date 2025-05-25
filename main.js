@@ -181,13 +181,13 @@ function createWindow() {
                     {
                         label: 'GitHub do Dev',
                         click: () => {
-                            shell.openExternal('https://example.com');
+                            shell.openExternal('https://github.com/charleslana');
                         }
                     },
                     {
                         label: 'LinkedIn do Dev',
                         click: () => {
-                            shell.openExternal('https://example.com');
+                            shell.openExternal('https://www.linkedin.com/in/charleslana');
                         }
                     }
                 ]
