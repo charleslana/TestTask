@@ -638,6 +638,14 @@ app.whenReady().then(() => {
             focusedWindow.webContents.toggleDevTools();
         }
     });
+
+    globalShortcut.register('F5', () => {
+        const focusedWindow = BrowserWindow.getFocusedWindow();
+        if (focusedWindow) {
+            focusedWindow.webContents.reload();
+        }
+    });
+
     if (process.env.ELECTRON_START === 'puppeteer') {
         createBusyWindow();
     } else {
