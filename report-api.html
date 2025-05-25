@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="bulma.min.css">
+    <link rel="stylesheet" href="bulma-timeline.min.css">
+    <link rel="stylesheet" href="modal-fx.min.css">
+    <style>
+        .image-zoom {
+            max-width: 90%;
+            max-height: 90%;
+            transition: transform 0.2s;
+        }
+
+        .image-zoom:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="report-api">
+        <div class="container">
+            <nav class="level my-5">
+                <!-- Left side -->
+                <div class="level-left">
+                    <div class="level-item">
+                        <p class="subtitle is-5"><strong>Relatório</strong></p>
+                    </div>
+                </div>
+
+                <!-- Right side -->
+                <div class="level-right">
+                    <p class="level-item"><a class="button is-success" @click="showExportModal = true">Exportar</a></p>
+                </div>
+            </nav>
+
+            <!-- Timeline começa aqui -->
+            <div class="timeline my-5" v-if="lastTest.tests && lastTest.tests.length">
+                <header class="timeline-header">
+                    <span class="tag is-medium is-link is-light">Início</span>
+                </header>
+
+                <div v-for="(result, index) in lastTest.tests" :key="index">
+                    <div class="timeline-item">
+                        <div class="timeline-marker is-link is-icon">
+                            <span class="icon">{{ result.error ? '❌' : '✅' }}</span>
+                        </div>
+                        <div class="timeline-content">
+                            <p class="heading" :class="{
+                  'has-text-danger': result.error,
+                  'has-text-success': !result.error,
+                }">
+                                {{ result.description }}
+                                <span>
+                                    {{ result.error ? '❌' : '✅' }}
+                                </span>
+                            </p>
+                            <p v-html="formatBreakLines(result.error ? ((result.success || '') + '\n' + result.error) : (result.success || ''))"
+                                :class="{
+                                    'has-text-danger': result.error,
+                                    'has-text-success': !result.error,
+                                }"></p>
+                        </div>
+
+                        <div class="timeline-content" v-if="result.screenshot">
+                            <figure class="image is-128x128">
+                                <img :src="result.screenshot" alt="Screenshot" class="is-clickable"
+                                    style="object-fit: contain; width: 128px; height: 128px;"
+                                    @click="changeScreenshot(result.screenshot)" />
+                            </figure>
+                        </div>
+                    </div>
+
+                    <header class="timeline-header" v-if="result.duration">
+                        <span class="tag is-info">{{ formatExecutionTime(result.duration) }}</span>
+                    </header>
+                </div>
+
+                <header class="timeline-header">
+                    <span class="tag is-warning">{{ totalDuration }}</span>
+                </header>
+
+                <!-- Última screenshot geral -->
+                <div class="timeline-item" v-if="lastTest.lastScreenshot">
+                    <div class="timeline-marker is-link is-icon">
+                        <span class="icon">📸</span>
+                    </div>
+                    <div class="timeline-content">
+                        <p class="heading">Última captura de tela</p>
+                        <figure class="image is-128x128">
+                            <img :src="lastTest.lastScreenshot" alt="Última Screenshot" class="is-clickable"
+                                style="object-fit: contain; width: 128px; height: 128px;"
+                                @click="changeScreenshot(lastTest.lastScreenshot)" />
+                        </figure>
+                    </div>
+                </div>
+
+                <header class="timeline-header">
+                    <span class="tag is-medium is-link is-light">Fim</span>
+                </header>
+            </div>
+            <!-- Timeline termina aqui -->
+        </div>
+
+        <!-- MODAL de Imagem em tela cheia -->
+        <div class="modal modal-fx-superScaled" :class="{ 'is-active': showModal }">
+            <div class="modal-background" @click="closeModal"></div>
+            <div class="modal-content is-huge is-image is-relative" style="width: 90vw; height: 90vh;">
+                <div class="buttons" style="position: absolute; z-index: 1000; top: 10px; right: 10px;">
+                    <button @click="zoomIn" class="button">Aumentar Zoom</button>
+                    <button @click="zoomOut" class="button">Diminuir Zoom</button>
+                    <button @click="resetZoom" class="button">Resetar Zoom</button>
+                </div>
+                <div style="overflow: auto; height: calc(90vh - 0px);">
+                    <img :src="selectedScreenshot" alt="Screenshot grande" class="image-zoom"
+                        :style="{ transform: `scale(${currentZoom})` }">
+                </div>
+            </div>
+            <button class="modal-close is-large" aria-label="close" @click="closeModal"></button>
+        </div>
+        <!-- FIM DA MODAL -->
+
+        <!-- MODAL de exportar -->
+        <div class="modal" :class="{ 'is-active': showExportModal }">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Exportar</p>
+                    <button class="delete" aria-label="close" @click="closeExportModal"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="buttons">
+                        <button class="button is-link" @click="exportPDF">Exportar como PDF</button>
+                    </div>
+                    <div v-if="showSuccessNotification" class="notification is-success mt-3">
+                        Relatório exportado com sucesso!
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button" @click="closeExportModal">Fechar</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <!-- FIM DA MODAL -->
+
+        <!-- Conteúdo oculto para gerar o PDF -->
+        <div id="report-pdf" ref="pdfContent" style="display: none;" class="content">
+            <h1 class="title is-4 has-text-dark">TestTask</h1>
+            <div class="has-text-grey">Relatório gerado em {{ new Date().toLocaleString('pt-BR') }}</div>
+            <!-- Resumo de status dos testes -->
+            <div style="margin: 1rem 0;">
+                <p :class="{
+                    'has-text-success': testsPassed === lastTest.tests.length,
+                    'has-text-danger': testsPassed !== lastTest.tests.length
+                    }" style="font-size: 1.2rem;">
+                    <template v-if="testsPassed === lastTest.tests.length">
+                        Testes passaram: {{ testsPassed }} de {{ lastTest.tests.length }} ✅
+                    </template>
+                    <template v-else>
+                        Testes: {{ testsPassed }} de {{ lastTest.tests.length }} (falharam {{ lastTest.tests.length -
+                        testsPassed }}) ❌
+                    </template>
+                </p>
+            </div>
+            <p class="has-text-grey-dark my-5">O teste durou: {{ totalDuration }}</p>
+
+            <table class="table is-bordered is-fullwidth is-striped">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Tempo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(result, index) in lastTest.tests" :key="'pdf-'+index">
+                        <td>{{ result.description }}</td>
+                        <td :style="{ color: result.error ? 'red' : 'green' }">
+                            {{ result.error ? '❌ ' + result.error : '✅ Passou' }}
+                        </td>
+                        <td>{{ formatExecutionTime(result.duration) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 1rem;">
+                <div class="has-text-grey"></div>
+                <div><!-- Paginação automática do html2pdf --></div>
+            </div>
+        </div>
+    </div>
+    <script src="vue@2.js"></script>
+    <script src="report-api.js"></script>
+    <script src="html2pdf.bundle.min.js"></script>
+</body>
+
+</html>

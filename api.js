@@ -166,7 +166,7 @@ new Vue({
             this.saveApiTests();
         },
         openLastTestReport() {
-            window.electron.ipcRenderer.send('report');
+            window.electron.ipcRenderer.send('report-api');
         },
         formatExecutionTime(ms) {
             if (ms < 1000) {

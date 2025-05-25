@@ -11,7 +11,8 @@ new Vue({
     computed: {
         totalDuration() {
             if (!this.lastTest.tests) return 0;
-            return this.lastTest.tests.reduce((acc, item) => acc + (item.executionTime || 0), 0) / 1000;
+            const duration = this.lastTest.tests.reduce((acc, item) => acc + (item.executionTime || 0), 0);
+            return this.formatExecutionTime(duration);
         },
         testsPassed() {
             if (!this.lastTest || !this.lastTest.tests) return 0;
@@ -90,6 +91,13 @@ new Vue({
         },
         resetZoom() {
             this.currentZoom = 1;
+        },
+        formatExecutionTime(ms) {
+            if (ms < 1000) {
+                return `${ms.toFixed(2)}ms`;
+            }
+            const seconds = ms / 1000;
+            return `${seconds.toFixed(2)}s`;
         }
     },
     mounted() {

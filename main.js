@@ -282,6 +282,20 @@ function createReportWindow() {
     win.loadFile('report.html');
 }
 
+function createReportApiWindow() {
+    const win = new BrowserWindow({
+        width: 1280,
+        height: 720,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js')
+        }
+    });
+    win.setMenu(null);
+    win.loadFile('report-api.html');
+}
+
 function attachLoadErrorHandler(win) {
     win.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
         console.error(`[Erro] ${validatedURL} falhou: ${errorDescription}`);
@@ -384,6 +398,7 @@ async function handleApiTests(apiRequests, apiBase) {
             url: apiRequest.url,
             duration: result.duration,
             error: result.error,
+            success: result.success,
             description: result.description,
             screenshot: result.screenshot
         });
@@ -517,11 +532,14 @@ ipcMain.on('start-api-tests', async (event, apiRequests) => {
     const pages = await browser.pages();
     const page = pages[0];
     const apiBase = new ApiBase(page);
+
     const lastTest = {
         tests: [],
         totalTime: 0,
         lastScreenshot: null,
     };
+
+    let isLastScreenshot = false;
 
     try {
         const results = await handleApiTests(apiRequests, apiBase);
@@ -547,11 +565,17 @@ ipcMain.on('start-api-tests', async (event, apiRequests) => {
         console.error('Erro ao executar testes de API:', error);
         event.sender.send('test-failed', [{ error: 'Erro ao iniciar os testes de API' }]);
     } finally {
+        if (isLastScreenshot) {
+            const lastScreenshot = await apiBase.screenshotWithBase64();
+            lastTest.lastScreenshot = lastScreenshot;
+        }
+
         await browser.close();
         await browser.disconnect();
         if (electronProcess) {
             electronProcess.kill();
         }
+
         event.sender.send('enable-start-button');
     }
 });
@@ -566,6 +590,10 @@ ipcMain.on('config', async (event) => {
 
 ipcMain.on('report', async (event) => {
     createReportWindow();
+});
+
+ipcMain.on('report-api', async (event) => {
+    createReportApiWindow();
 });
 
 ipcMain.handle('load-example', async (event, exampleName) => {

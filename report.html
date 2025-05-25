@@ -76,12 +76,12 @@
                     </div>
 
                     <header class="timeline-header" v-if="result.executionTime">
-                        <span class="tag is-info">{{ (result.executionTime / 1000).toFixed(2) }}s</span>
+                        <span class="tag is-info">{{ formatExecutionTime(result.executionTime) }}</span>
                     </header>
                 </div>
 
                 <header class="timeline-header">
-                    <span class="tag is-warning">{{ totalDuration.toFixed(2) }}s</span>
+                    <span class="tag is-warning">{{ totalDuration }}</span>
                 </header>
 
                 <!-- Última screenshot geral -->
@@ -168,7 +168,7 @@
                     </template>
                 </p>
             </div>
-            <p class="has-text-grey-dark my-5">O teste durou: {{ totalDuration.toFixed(2) }}s</p>
+            <p class="has-text-grey-dark my-5">O teste durou: {{ totalDuration }}</p>
 
             <table class="table is-bordered is-fullwidth is-striped">
                 <thead>
@@ -176,7 +176,7 @@
                         <th>Ação</th>
                         <th>Descrição</th>
                         <th>Status</th>
-                        <th>Tempo (s)</th>
+                        <th>Tempo</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -186,7 +186,7 @@
                         <td :style="{ color: result.fail ? 'red' : 'green' }">
                             {{ result.fail ? '❌ ' + result.fail : '✅ Passou' }}
                         </td>
-                        <td>{{ (result.executionTime / 1000).toFixed(2) }}</td>
+                        <td>{{ formatExecutionTime(result.executionTime) }}</td>
                     </tr>
                 </tbody>
             </table>
