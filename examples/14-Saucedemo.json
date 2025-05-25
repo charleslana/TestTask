@@ -1,0 +1,39 @@
+{
+  "name": "Saucedemo",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://www.saucedemo.com/v1/",
+    "actions": [
+      {
+        "type": "fill",
+        "selector": "#user-name",
+        "text": "standard_user",
+        "selector2": "",
+        "disabled": false
+      },
+      {
+        "type": "fill",
+        "selector": "#password",
+        "text": "secret_sauce",
+        "selector2": "",
+        "disabled": false
+      },
+      {
+        "type": "click",
+        "selector": "#login-button",
+        "text": "",
+        "selector2": "",
+        "disabled": false
+      },
+      {
+        "type": "assertText",
+        "selector": ".product_label",
+        "text": "Products",
+        "selector2": "",
+        "disabled": false
+      }
+    ]
+  },
+  "apiTests": []
+}

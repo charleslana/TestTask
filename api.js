@@ -144,7 +144,7 @@ new Vue({
             this.isDisabled = true;
             this.testNotification = false;
             this.testFail = '';
-            window.electron.ipcRenderer.send('start-api-tests', this.apiTests);
+            window.electron.ipcRenderer.send('start-api-tests', { apiRequests: this.apiTests, config: this.getConfig() });
         },
         openModalDeleteConfirm(index) {
             this.deleteIndex = index;
@@ -178,7 +178,19 @@ new Vue({
         saveLastTest(lastTest) {
             this.totalTime = this.formatExecutionTime(lastTest.totalTime);
             localStorage.setItem('lastApiTest', JSON.stringify(lastTest));
-        }
+        },
+        getConfig() {
+            const configStr = localStorage.getItem('configapi');
+            try {
+                return JSON.parse(configStr);
+            } catch (e) {
+                console.error('Config inválido:', e);
+                return {};
+            }
+        },
+        openTestConfig() {
+            window.electron.ipcRenderer.send('config-api');
+        },
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {

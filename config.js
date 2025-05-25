@@ -48,11 +48,11 @@ new Vue({
             alert('Configurações salvas com sucesso!');
         },
         loadConfig() {
-            const configSalva = localStorage.getItem('confige2e');
+            const getConfig = localStorage.getItem('confige2e');
 
-            if (configSalva) {
+            if (getConfig) {
                 try {
-                    const config = JSON.parse(configSalva);
+                    const config = JSON.parse(getConfig);
 
                     this.navigateTimeout = config.navigateTimeout ?? this.navigateTimeout;
                     this.defaultTimeout = config.defaultTimeout ?? this.defaultTimeout;

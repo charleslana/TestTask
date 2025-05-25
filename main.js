@@ -156,6 +156,11 @@ function createWindow() {
                                 label: 'Importar Exemplo Clique e espera resposta',
                                 enabled: isWorkspacePage,
                                 click: () => mainWindow.webContents.send('import-example', '13-Exemplo Clique e espera resposta')
+                            },
+                            {
+                                label: 'Importar Exemplo Saucedemo',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '14-Saucedemo')
                             }
                         ]
                     },
@@ -266,6 +271,22 @@ function createConfigWindow() {
     });
     win.setMenu(null);
     win.loadFile('config.html');
+}
+
+function createConfigApiWindow() {
+    const win = new BrowserWindow({
+        width: 1280,
+        height: 720,
+        resizable: true,
+        maximizable: true,
+        webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js')
+        }
+    });
+    win.setMenu(null);
+    win.loadFile('config-api.html');
 }
 
 function createReportWindow() {
@@ -506,15 +527,17 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         }, 0);
         lastTest.totalTime = executionTime;
         console.log(`O teste levou ${executionTime} ms para executar.`);
-        event.sender.send('enable-start-button');
         event.sender.send('test-completed', lastTest);
+        event.sender.send('enable-start-button');
     }
 
 });
 
-ipcMain.on('start-api-tests', async (event, apiRequests) => {
+ipcMain.on('start-api-tests', async (event, payload) => {
+    const { apiRequests, config } = payload;
     console.log('Iniciando testes de API!');
     console.log(apiRequests);
+    console.log(config);
 
     process.env.ELECTRON_START = 'puppeteer';
 
@@ -539,41 +562,76 @@ ipcMain.on('start-api-tests', async (event, apiRequests) => {
         lastScreenshot: null,
     };
 
+    let isClose = true;
     let isLastScreenshot = false;
+    let iterationCount = 1;
+
+    // configs
+    if (config) {
+        apiBase.defaultTimeout = config.defaultTimeout;
+        apiBase.page.setDefaultTimeout(apiBase.defaultTimeout);
+        apiBase.selectedScreenshot = config.selectedScreenshot;
+        isClose = config.isCloseBrowser;
+        isLastScreenshot = config.selectedScreenshot === 'lastScreenshot';
+        apiBase.fullScreenshot = config.fullScreenshot;
+        iterationCount = config.iteration;
+    }
+
+    let hasErrors = false;
+    let errors = [];
 
     try {
-        const results = await handleApiTests(apiRequests, apiBase);
+        let results = [];
+        for (let i = 0; i < iterationCount; i++) {
+            const iterationResults = await handleApiTests(apiRequests, apiBase);
+            results.push(...iterationResults);
+        }
 
         lastTest.tests = results;
+
+        hasErrors = results.some(r => r.error != null);
+        if (hasErrors) {
+            errors = results
+                .filter(r => r.error != null)
+                .map(r => ({ url: r.url, error: r.error }));
+        }
+    } catch (error) {
+        console.error('Erro ao executar testes de API:', error);
+        hasErrors = true;
+        errors = [{ error: 'Erro ao iniciar os testes de API' }];
+    } finally {
+        try {
+            if (isLastScreenshot) {
+                const lastScreenshot = await apiBase.screenshotWithBase64();
+                lastTest.lastScreenshot = lastScreenshot;
+            }
+        } catch (e) {
+            console.error('Erro ao capturar o screenshot final:', e);
+        }
+
+        try {
+            if (isClose) {
+                await browser.close();
+                await browser.disconnect();
+                if (electronProcess) {
+                    electronProcess.kill();
+                }
+            }
+        } catch (e) {
+            console.error('Erro ao fechar o navegador/processo:', e);
+        }
+
         const executionTime = lastTest.tests.reduce((sum, current) => {
             return sum + (current.duration || 0);
         }, 0);
         lastTest.totalTime = executionTime;
+
         console.log(`O teste levou ${executionTime} ms para executar.`);
 
-        const hasErrors = results.some(r => r.error != null);
         if (hasErrors) {
-            const errors = results
-                .filter(r => r.error != null)
-                .map(r => ({ url: r.url, error: r.error }));
-
             event.sender.send('test-failed', errors, lastTest);
-            return;
-        }
-        event.sender.send('test-completed', lastTest);
-    } catch (error) {
-        console.error('Erro ao executar testes de API:', error);
-        event.sender.send('test-failed', [{ error: 'Erro ao iniciar os testes de API' }]);
-    } finally {
-        if (isLastScreenshot) {
-            const lastScreenshot = await apiBase.screenshotWithBase64();
-            lastTest.lastScreenshot = lastScreenshot;
-        }
-
-        await browser.close();
-        await browser.disconnect();
-        if (electronProcess) {
-            electronProcess.kill();
+        } else {
+            event.sender.send('test-completed', lastTest);
         }
 
         event.sender.send('enable-start-button');
@@ -586,6 +644,10 @@ ipcMain.on('about', async (event) => {
 
 ipcMain.on('config', async (event) => {
     createConfigWindow();
+});
+
+ipcMain.on('config-api', async (event) => {
+    createConfigApiWindow();
 });
 
 ipcMain.on('report', async (event) => {

@@ -26,7 +26,12 @@
                         <span>{{ workspace.name }}</span>
                         <a href="#" class="ml-2" @click.prevent="openEditModal(index)">✏️ Editar nome</a><br />
                         <strong>Versão:</strong> {{ workspace.version }}<br />
-                        <strong>Tipo:</strong> {{ workspace.testType === 'e2e' ? 'Testes E2E' : 'Testes API' }}
+                        <div class="is-flex is-align-items-center">
+                            <strong class="mr-2">Tipo:</strong>
+                            <span class="is-flex is-align-items-center"
+                                v-html="getTestTypeHtml(workspace.testType)"></span>
+                        </div>
+
                     </div>
                 </div>
                 <div class="level-right">
@@ -214,6 +219,23 @@
                     copy.name = `${original.name} (Cópia)`;
                     this.workspaces.push(copy);
                     this.saveWorkspaces();
+                },
+                getTestTypeHtml(testType) {
+                    if (testType === 'e2e') {
+                        return `
+                        <span class="is-flex is-align-items-center">
+                        Testes E2E
+                        <i class="material-icons ml-2">language</i>
+                        </span>
+                    `;
+                    } else {
+                        return `
+                        <span class="is-flex is-align-items-center">
+                        Testes API
+                        <i class="material-icons ml-2">play_for_work</i>
+                        </span>
+                    `;
+                    }
                 }
             },
             mounted() {

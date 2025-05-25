@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Configuração</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="bulma.min.css">
+</head>
+
+<body>
+    <div id="config-api">
+        <div class="container">
+            <div class="is-size-3 has-text-centered my-5">Configuração testes API</div>
+
+            <div class="field">
+                <label class="label" for="custom1">Limite de tempo para requisição em ms:</label>
+                <div class="control">
+                    <input class="input" id="custom1" placeholder="ex: 10000" type="number"
+                        v-model.trim="defaultTimeout" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Mostrar screenshots do teste:</label>
+                <label class="radio">
+                    <input type="radio" value="everyScreenshot" v-model="selectedScreenshot" />
+                    Mostrar screenshots a cada ação de teste (considere que o tempo do teste afeta ao tirar screenshot
+                    da tela de cada ação)
+                </label>
+                <br>
+                <label class="radio">
+                    <input type="radio" value="lastScreenshot" v-model="selectedScreenshot" />
+                    Mostrar screenshot no final do teste
+                </label>
+                <br>
+                <label class="radio">
+                    <input type="radio" value="neverScreenshot" v-model="selectedScreenshot" />
+                    Não mostrar screenshots
+                </label>
+            </div>
+
+            <div class="field">
+                <label class="label">Tipo de screenshot:</label>
+
+                <label class="radio">
+                    <input type="radio" :disabled="!isFullScreenshotEnabled" v-model="fullScreenshot" :value="false">
+                    Screenshot normal
+                </label>
+                <br>
+                <label class="radio">
+                    <input type="radio" :disabled="!isFullScreenshotEnabled" v-model="fullScreenshot" :value="true">
+                    Screenshot da tela toda
+                </label>
+            </div>
+
+            <div class="field">
+                <label class="label">Configuração de fechar a janela do teste da automação:</label>
+                <label class="checkbox">
+                    <input type="checkbox" v-model="isCloseBrowser" />
+                    Fechar a janela de teste
+                </label>
+            </div>
+
+            <div class="field">
+                <label class="label" for="custom1">Quantidade de repetição:</label>
+                <div class="control">
+                    <input class="input" id="custom1" placeholder="ex: 1" type="number" v-model="iteration" />
+                </div>
+            </div>
+
+            <div class="field my-5">
+                <div class="control">
+                    <button class="button is-primary is-fullwidth" id="saveSettings">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="vue@2.js"></script>
+    <script src="config-api.js"></script>
+</body>
+
+</html>
