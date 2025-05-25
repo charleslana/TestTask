@@ -13,7 +13,8 @@ new Vue({
             contentType: 'application/json',
             expectStatusCode: 200,
             properties: [],
-            disabled: false
+            disabled: false,
+            validateFieldNotExists: false,
         },
         tempBodyFields: [],
         tempProperties: [],
@@ -45,6 +46,7 @@ new Vue({
                 expectStatusCode: 200,
                 properties: [],
                 disabled: false,
+                validateFieldNotExists: false,
             };
             this.editIndex = null;
             this.apiTestModal = true;
@@ -162,12 +164,6 @@ new Vue({
         toggleDisabled(test) {
             test.disabled = !test.disabled;
             this.saveApiTests();
-        },
-        cleanFields(fields) {
-            return (fields || []).map(f => {
-                const { disabled, ...rest } = f;
-                return rest;
-            });
         },
         openLastTestReport() {
             window.electron.ipcRenderer.send('report');

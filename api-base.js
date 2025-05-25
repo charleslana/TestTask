@@ -46,7 +46,7 @@ export class ApiBase extends Base {
                             return { key, value, disabled };
                         });
                     }
-                    this.validateProperties(responseBody, api.properties);
+                    this.validateProperties(responseBody, api.properties, api.validateFieldNotExists);
                 }
                 success = `Sucesso na requisição ${api.method}`;
                 console.log(success);
@@ -80,8 +80,10 @@ export class ApiBase extends Base {
         }, obj);
     }
 
-    validateProperties(responseData, properties) {
+    validateProperties(responseData, properties, validateFieldNotExists) {
         if (!properties || !properties.length) return;
+
+        const validatedKeys = [];
 
         for (const { key, value: expectedValue, disabled } of properties) {
             if (disabled) continue;
@@ -132,6 +134,28 @@ export class ApiBase extends Base {
 
             if (actualStr !== expectedStr) {
                 throw new Error(`Valor da propriedade '${key}' é '${actualStr}', mas esperado '${expectedStr}'.`);
+            }
+        }
+
+        if (validateFieldNotExists) {
+            const flattenKeys = (obj, prefix = '') =>
+                Object.keys(obj).flatMap(key => {
+                    const path = prefix ? `${prefix}.${key}` : key;
+                    if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+                        return flattenKeys(obj[key], path);
+                    }
+                    return path;
+                });
+
+            const allKeys = flattenKeys(responseData);
+            const normalizedValidatedKeys = validatedKeys
+                .filter(k => k !== '$')
+                .map(k => k.replace(/^\$?\./, ''));
+
+            const extraKeys = allKeys.filter(k => !normalizedValidatedKeys.includes(k));
+
+            if (extraKeys.length) {
+                throw new Error(`A resposta da API contém propriedades não esperadas: ${extraKeys.join(', ')}`);
             }
         }
 

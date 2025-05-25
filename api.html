@@ -63,8 +63,18 @@
                                     <div>Method: {{ test.method }}</div>
                                     <div>Content-Type: {{ test.contentType }}</div>
                                     <div>Status Code esperado: {{ test.expectStatusCode }}</div>
-                                    <div v-if="test.bodyFields">Data: {{ cleanFields(test.bodyFields) }}</div>
-                                    <div v-if="test.properties">Validações de campos: {{ cleanFields(test.properties) }}
+                                    <div
+                                        v-if="test.bodyFields && test.bodyFields.filter(field => !field.disabled).length">
+                                        Data: {{ test.bodyFields.filter(field =>
+                                        !field.disabled).map(field => `${field.key}: ${field.value}`).join(', ') }}
+                                    </div>
+                                    <div
+                                        v-if="test.properties && test.properties.filter(field => !field.disabled).length">
+                                        Validações de campos: {{ test.properties.filter(field =>
+                                        !field.disabled).map(field => `${field.key}: ${field.value}`).join(', ') }}
+                                    </div>
+                                    <div v-if="test.validateFieldNotExists">
+                                        Validar campo não existente no retorno da API
                                     </div>
                                     <div class="buttons mt-5">
                                         <button class="button is-small" @click="editTest(index)">Editar</button>
@@ -226,6 +236,12 @@
                                     {{ tempProperties[index].disabled ? 'Habilitar' : 'Desabilitar' }}
                                 </button>
                             </div>
+                        </div>
+                        <div class="field mt-3">
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="apiTest.validateFieldNotExists">
+                                Validar campo não existente no retorno da API
+                            </label>
                         </div>
                     </div>
                 </section>
