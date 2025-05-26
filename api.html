@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Teste de API</title>
     <link rel="stylesheet" href="bulma.min.css">
+    <link rel="stylesheet" href="bulma-tooltip.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -166,25 +167,40 @@
                             Data / Body (opcional)
                             <i class="material-icons ml-2 is-clickable" @click="isModalInfo = true">info</i>
                         </label>
-                        <div class="control">
+                        <div class="control mb-4">
                             <button class="button" @click="addBodyField">Adicionar Campo</button>
                         </div>
-                        <div v-for="(bodyField, index) in tempBodyFields" :key="index" class="field has-addons mt-4">
-                            <div class="control">
-                                <input class="input" type="text" v-model="bodyField.key" placeholder="Chave"
-                                    :disabled="bodyField.disabled" />
+                        <div v-for="(bodyField, index) in tempBodyFields" :key="index" class="box mb-3" ref="bodyField"
+                            refInFor>
+                            <div class="field is-grouped is-align-items-center">
+                                <div class="control is-expanded">
+                                    <input class="input" type="text" v-model="bodyField.key" placeholder="Chave"
+                                        :disabled="bodyField.disabled" />
+                                </div>
+                                <div class="control is-expanded">
+                                    <input class="input" type="text" v-model="bodyField.value" placeholder="Valor"
+                                        :disabled="bodyField.disabled" />
+                                </div>
+                                <div class="control">
+                                    <button class="button is-danger" @click="removeBodyField(index)">Excluir</button>
+                                </div>
+                                <div class="control">
+                                    <button class="button is-warning" @click="toggleBodyFieldDisable(index)">
+                                        {{ bodyField.disabled ? 'Habilitar' : 'Desabilitar' }}
+                                    </button>
+                                </div>
                             </div>
-                            <div class="control">
-                                <input class="input" type="text" v-model="bodyField.value" placeholder="Valor"
-                                    :disabled="bodyField.disabled" />
-                            </div>
-                            <div class="control">
-                                <button class="button is-danger" @click="removeBodyField(index)">Excluir</button>
-                            </div>
-                            <div class="control">
-                                <button class="button is-warning" @click="toggleBodyFieldDisable(index)">
-                                    {{ tempBodyFields[index].disabled ? 'Habilitar' : 'Desabilitar' }}
-                                </button>
+
+                            <!-- Checkbox Usar nome interno -->
+                            <div class="field mt-2 is-flex is-align-items-center">
+                                <label class="checkbox mr-2">
+                                    <input type="checkbox" v-model="bodyField.isAlias">
+                                    Usar nome interno
+                                </label>
+                                <span class="has-tooltip-arrow has-tooltipl-multiline"
+                                    data-tooltip="Ao marcar essa opção,&#10;será utilizado o alias de um campo&#10;que você extraiu da resposta">
+                                    <i class="material-icons">info</i>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -220,7 +236,8 @@
                         <div class="control">
                             <button class="button" @click="addPropertyField">Adicionar Validação de campo</button>
                         </div>
-                        <div v-for="(property, index) in tempProperties" :key="index" class="field has-addons mt-4">
+                        <div v-for="(property, index) in tempProperties" :key="index" class="field has-addons mt-4"
+                            ref="propertyField" refInFor>
                             <div class="control">
                                 <input class="input" type="text" v-model="property.key" placeholder="Chave"
                                     :disabled="property.disabled" />
@@ -256,7 +273,7 @@
                         </div>
 
                         <div v-for="(extract, index) in tempExtractList" :key="'extract-' + index"
-                            class="field has-addons mt-4">
+                            class="field has-addons mt-4" ref="aliasField" refInFor>
                             <div class="control">
                                 <input class="input" type="text" v-model="extract.key"
                                     placeholder="Caminho da resposta (ex: data.token)" />

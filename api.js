@@ -82,7 +82,22 @@ new Vue({
             this.saveApiTests();
         },
         addBodyField() {
-            this.tempBodyFields.push({ key: '', value: '', disabled: false });
+            this.tempBodyFields.push({ key: '', value: '', disabled: false, isAlias: false });
+            this.$nextTick(() => {
+                const refs = this.$refs.bodyField;
+                const lastEl = Array.isArray(refs) ? refs[refs.length - 1] : refs;
+
+                console.log('Refs:', refs);
+                if (lastEl && typeof lastEl.scrollIntoView === 'function') {
+                    lastEl.scrollIntoView({ block: 'center' });
+                    const input = lastEl?.querySelector('input');
+                    if (input) {
+                        input.focus();
+                    }
+                } else {
+                    console.warn('Elemento não encontrado para scroll:', lastEl);
+                }
+            });
         },
         removeBodyField(index) {
             this.tempBodyFields.splice(index, 1);
@@ -93,6 +108,21 @@ new Vue({
         },
         addPropertyField() {
             this.tempProperties.push({ key: '', value: '', disabled: false });
+            this.$nextTick(() => {
+                const refs = this.$refs.propertyField;
+                const lastEl = Array.isArray(refs) ? refs[refs.length - 1] : refs;
+
+                console.log('Refs:', refs);
+                if (lastEl && typeof lastEl.scrollIntoView === 'function') {
+                    lastEl.scrollIntoView({ block: 'center' });
+                    const input = lastEl?.querySelector('input');
+                    if (input) {
+                        input.focus();
+                    }
+                } else {
+                    console.warn('Elemento não encontrado para scroll:', lastEl);
+                }
+            });
         },
         removePropertyField(index) {
             this.tempProperties.splice(index, 1);
@@ -199,6 +229,21 @@ new Vue({
         },
         addExtractField() {
             this.tempExtractList.push({ key: '', alias: '' });
+            this.$nextTick(() => {
+                const refs = this.$refs.aliasField;
+                const lastEl = Array.isArray(refs) ? refs[refs.length - 1] : refs;
+
+                console.log('Refs:', refs);
+                if (lastEl && typeof lastEl.scrollIntoView === 'function') {
+                    lastEl.scrollIntoView({ block: 'center' });
+                    const input = lastEl?.querySelector('input');
+                    if (input) {
+                        input.focus();
+                    }
+                } else {
+                    console.warn('Elemento não encontrado para scroll:', lastEl);
+                }
+            });
         },
         removeExtractField(index) {
             this.tempExtractList.splice(index, 1);
