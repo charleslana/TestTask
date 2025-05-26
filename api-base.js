@@ -4,6 +4,10 @@
  */
 
 import { Base } from './base.js';
+import { readFileSync } from 'fs';
+
+const jsonPath = new URL('./package.json', import.meta.url);
+const packageJson = JSON.parse(readFileSync(jsonPath, 'utf-8'));
 
 export class ApiBase extends Base {
     constructor(page) {
@@ -25,6 +29,7 @@ export class ApiBase extends Base {
         let success = null;
         let screenshot = null;
         let error;
+        let extractedValues;
         try {
             await this.page.setRequestInterception(true);
             this.requestData(api);
@@ -35,6 +40,7 @@ export class ApiBase extends Base {
                         `Falha na requisição ${api.method} para ${response.url()}. Status ${response.status()}. Response ${await response.text()}`
                     );
                 }
+                console.log('Resposta da requisição:');
                 console.log(await this.getLog(response));
                 if (api.properties) {
                     const responseBody = await response.json();
@@ -47,6 +53,10 @@ export class ApiBase extends Base {
                         });
                     }
                     this.validateProperties(responseBody, api.properties, api.validateFieldNotExists);
+                    if (api.extractList && api.extractList.length > 0) {
+                        extractedValues = this.extractFields(responseBody, api.extractList);
+                        console.log('Campos extraídos:', extractedValues);
+                    }
                 }
                 success = `Sucesso na requisição ${api.method}`;
                 console.log(success);
@@ -62,7 +72,7 @@ export class ApiBase extends Base {
             await this.page.setRequestInterception(false);
             screenshot = await this.getScreenshot();
         }
-        return { duration, error, success, description, screenshot };
+        return { duration, error, success, description, screenshot, extractedValues };
     }
 
     resolvePath(obj, path) {
@@ -164,7 +174,7 @@ export class ApiBase extends Base {
 
     async requestData(api) {
         const headers = {
-            Authorization: `Bearer ${api.authorization}`,
+            'User-Agent': `TestTask/${packageJson.version}`,
             ...this.customHeaders,
         };
         if (api.contentType === 'multipart/form-data') {
@@ -173,13 +183,23 @@ export class ApiBase extends Base {
             headers['Content-Type'] = api.contentType;
         }
         this.page.once('request', interceptedRequest => {
-            interceptedRequest.continue({
+            const requestData = {
+                url: interceptedRequest.url(),
                 method: api.method,
-                postData: api.bodyFields ? this.getData(api) : null,
                 headers: {
                     ...interceptedRequest.headers(),
                     ...headers,
                 },
+                body: api.bodyFields ? this.getData(api) : null,
+            };
+
+            console.log('Enviando requisição:');
+            console.log(JSON.stringify(requestData, null, 2));
+
+            interceptedRequest.continue({
+                method: requestData.method,
+                postData: requestData.body,
+                headers: requestData.headers,
             });
         });
     }
@@ -271,4 +291,40 @@ export class ApiBase extends Base {
             bodyJson: await response.json(),
         };
     }
+
+    extractFields(responseData, extractList) {
+        const result = {};
+        for (const { key, alias } of extractList) {
+            try {
+                let value;
+                if (key === '$') {
+                    value = Array.isArray(responseData)
+                        ? responseData
+                        : Array.isArray(responseData.data)
+                            ? responseData.data
+                            : Array.isArray(responseData.json)
+                                ? responseData.json
+                                : null;
+
+                    if (!value) throw new Error(`Não é possível extrair array usando '$'.`);
+                } else {
+                    const normalizedPath = key
+                        .replace(/^\$/, '')
+                        .replace(/^\./, '')
+                        .replace(/\[(\d+)\]/g, '.$1');
+
+                    value = normalizedPath
+                        .split('.')
+                        .reduce((acc, part) => acc?.[part], responseData);
+                }
+
+                result[alias] = value;
+            } catch (err) {
+                console.warn(`Erro ao extrair "${key}" como "${alias}": ${err.message}`);
+                result[alias] = undefined;
+            }
+        }
+        return result;
+    }
+
 }

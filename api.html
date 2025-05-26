@@ -245,6 +245,32 @@
                             </label>
                         </div>
                     </div>
+
+                    <div class="field">
+                        <label class="label is-flex is-align-items-center">
+                            Extração de campo da resposta (opcional)
+                            <i class="material-icons ml-2 is-clickable" @click="isModalInfo = true">info</i>
+                        </label>
+                        <div class="control">
+                            <button class="button" @click="addExtractField">Adicionar Extração de campo</button>
+                        </div>
+
+                        <div v-for="(extract, index) in tempExtractList" :key="'extract-' + index"
+                            class="field has-addons mt-4">
+                            <div class="control">
+                                <input class="input" type="text" v-model="extract.key"
+                                    placeholder="Caminho da resposta (ex: data.token)" />
+                            </div>
+                            <div class="control">
+                                <input class="input" type="text" v-model="extract.alias"
+                                    placeholder="Nome interno (ex: tokenUsuario)" />
+                            </div>
+                            <div class="control">
+                                <button class="button is-danger" @click="removeExtractField(index)">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+
                 </section>
                 <footer class="modal-card-foot">
                     <div class="buttons">

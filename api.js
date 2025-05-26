@@ -13,11 +13,13 @@ new Vue({
             contentType: 'application/json',
             expectStatusCode: 200,
             properties: [],
+            extractList: [],
             disabled: false,
             validateFieldNotExists: false,
         },
         tempBodyFields: [],
         tempProperties: [],
+        tempExtractList: [],
         apiTestModal: false,
         editIndex: null,
         modalDeleteConfirm: false,
@@ -45,6 +47,7 @@ new Vue({
                 contentType: 'application/json',
                 expectStatusCode: 200,
                 properties: [],
+                extractList: [],
                 disabled: false,
                 validateFieldNotExists: false,
             };
@@ -67,6 +70,7 @@ new Vue({
         saveApiTest() {
             this.apiTest.bodyFields = this.tempBodyFields;
             this.apiTest.properties = this.tempProperties;
+            this.apiTest.extractList = this.tempExtractList;
 
             if (this.editIndex !== null) {
                 this.apiTests[this.editIndex] = { ...this.apiTest };
@@ -103,6 +107,7 @@ new Vue({
 
             this.tempBodyFields = test.bodyFields.map(field => ({ ...field }));
             this.tempProperties = test.properties.map(prop => ({ ...prop }));
+            this.tempExtractList = (test.extractList || []).map(item => ({ ...item }));
 
             this.editIndex = index;
             this.apiTestModal = true;
@@ -139,6 +144,7 @@ new Vue({
         clearTempFields() {
             this.tempBodyFields = [];
             this.tempProperties = [];
+            this.tempExtractList = [];
         },
         startTest() {
             this.isDisabled = true;
@@ -190,6 +196,12 @@ new Vue({
         },
         openTestConfig() {
             window.electron.ipcRenderer.send('config-api');
+        },
+        addExtractField() {
+            this.tempExtractList.push({ key: '', alias: '' });
+        },
+        removeExtractField(index) {
+            this.tempExtractList.splice(index, 1);
         },
     },
     mounted() {

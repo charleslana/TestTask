@@ -33,6 +33,13 @@
     src: url(Material-Icons.woff2) format('woff2');
 }
 
+@font-face {
+    font-family: 'IBM Plex Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url(IBMPlexSans-Regular.ttf) format('ttf');
+}
+
 .material-icons {
     font-family: 'Material Icons';
     font-weight: normal;
@@ -47,4 +54,8 @@
     direction: ltr;
     -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
+}
+
+* {
+    font-family: "IBM Plex Sans", sans-serif;
 }

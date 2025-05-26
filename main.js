@@ -421,7 +421,8 @@ async function handleApiTests(apiRequests, apiBase) {
             error: result.error,
             success: result.success,
             description: result.description,
-            screenshot: result.screenshot
+            screenshot: result.screenshot,
+            extractedValues: result.extractedValues,
         });
     }
 
