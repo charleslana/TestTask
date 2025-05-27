@@ -1,0 +1,160 @@
+{
+  "name": "testes de api",
+  "version": "0.0.1",
+  "testType": "api",
+  "test": {
+    "url": "",
+    "actions": []
+  },
+  "apiTests": [
+    {
+      "url": "https://postman-echo.com/get",
+      "method": "GET",
+      "bodyFields": [],
+      "contentType": "application/json",
+      "expectStatusCode": 200,
+      "properties": [],
+      "disabled": false
+    },
+    {
+      "url": "https://postman-echo.com/post",
+      "method": "POST",
+      "bodyFields": [
+        {
+          "key": ".foo",
+          "value": "FOO",
+          "disabled": false
+        },
+        {
+          "key": ".bar",
+          "value": "BAR",
+          "disabled": false
+        }
+      ],
+      "contentType": "application/json",
+      "expectStatusCode": 200,
+      "properties": [
+        {
+          "key": "data.foo",
+          "value": "FOO",
+          "disabled": false
+        },
+        {
+          "key": "data.bar",
+          "value": "BAR",
+          "disabled": false
+        }
+      ],
+      "disabled": false,
+      "extractList": [
+        {
+          "key": "data.foo",
+          "alias": "fooToken"
+        }
+      ]
+    },
+    {
+      "url": "https://postman-echo.com/post",
+      "method": "POST",
+      "bodyFields": [
+        {
+          "key": ".foo",
+          "value": "fooToken",
+          "disabled": false,
+          "isAlias": true
+        },
+        {
+          "key": ".bar",
+          "value": "BAR",
+          "disabled": false,
+          "isAlias": false
+        }
+      ],
+      "contentType": "application/json",
+      "expectStatusCode": 200,
+      "properties": [
+        {
+          "key": "data.foo",
+          "value": "FOO",
+          "disabled": false
+        },
+        {
+          "key": "data.bar",
+          "value": "BAR",
+          "disabled": false
+        }
+      ],
+      "disabled": false,
+      "extractList": []
+    },
+    {
+      "url": "https://postman-echo.com/post",
+      "method": "POST",
+      "bodyFields": [
+        {
+          "key": ".foo",
+          "value": "FOO",
+          "disabled": false
+        },
+        {
+          "key": ".bar",
+          "value": "BAR",
+          "disabled": false
+        }
+      ],
+      "contentType": "application/json",
+      "expectStatusCode": 200,
+      "properties": [
+        {
+          "key": "data.foo",
+          "value": "FOO",
+          "disabled": false
+        },
+        {
+          "key": "data.bar",
+          "value": "BAR",
+          "disabled": true
+        }
+      ],
+      "disabled": true,
+      "validateFieldNotExists": true
+    },
+    {
+      "url": "https://reqres.in/api/users/2",
+      "method": "PUT",
+      "headers": [
+        {
+          "key": "x-api-key",
+          "value": "reqres-free-v1",
+          "disabled": false
+        },
+        {
+          "key": "Authorization",
+          "value": "Bearer fooToken",
+          "disabled": false,
+          "isAlias": true
+        }
+      ],
+      "bodyFields": [
+        {
+          "key": ".name",
+          "value": "NAME",
+          "disabled": false,
+          "isAlias": false
+        },
+        {
+          "key": ".job",
+          "value": "JOB",
+          "disabled": false,
+          "isAlias": false
+        }
+      ],
+      "contentType": "application/json",
+      "expectStatusCode": 200,
+      "properties": [],
+      "extractList": [],
+      "disabled": false,
+      "validateFieldNotExists": false
+    }
+  ]
+}

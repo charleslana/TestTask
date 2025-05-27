@@ -168,10 +168,10 @@ function createWindow() {
                         label: 'Exemplos testes API',
                         submenu: [
                             {
-                                label: 'Importar Exemplo API',
+                                label: 'Importar Exemplo testes de api',
                                 enabled: isWorkspacePage,
-                                click: () => mainWindow.webContents.executeJavaScript(`alert("Não implementado");`)
-                            },
+                                click: () => mainWindow.webContents.send('import-example', '1000-testes de api')
+                            }
                         ]
                     }
                 ]
@@ -410,11 +410,39 @@ async function runTestOnce(test, config, base, event, lastTest) {
 
 async function handleApiTests(apiRequests, apiBase) {
     const results = [];
+    const allExtractedValues = {};
 
     for (const apiRequest of apiRequests) {
         if (apiRequest.disabled) continue;
 
+        for (const field of apiRequest.bodyFields || []) {
+            if (!field.disabled && field.isAlias) {
+                const alias = field.value;
+                if (allExtractedValues[alias]) {
+                    field.value = allExtractedValues[alias];
+                }
+            }
+        }
+
+        for (const header of apiRequest.headers || []) {
+            if (!header.disabled && header.key && header.value) {
+                for (const [alias, value] of Object.entries(allExtractedValues)) {
+                    if (header.value.includes(alias)) {
+                        header.value = header.value.replace(alias, value);
+                    }
+                }
+                apiBase.addHeader(header.key, header.value);
+            }
+        }
+
         const result = await apiBase.request(apiRequest);
+
+        if (result.extractedValues) {
+            for (const [alias, value] of Object.entries(result.extractedValues)) {
+                allExtractedValues[alias] = value;
+            }
+        }
+
         results.push({
             url: apiRequest.url,
             duration: result.duration,
@@ -428,7 +456,6 @@ async function handleApiTests(apiRequests, apiBase) {
 
     return results;
 }
-
 
 ipcMain.on('start-puppeteer', async (event, { test, config }) => {
     console.log('Iniciando automação no Puppeteer!');

@@ -9,6 +9,7 @@ new Vue({
         apiTest: {
             url: '',
             method: 'GET',
+            headers: [],
             bodyFields: [],
             contentType: 'application/json',
             expectStatusCode: 200,
@@ -17,6 +18,7 @@ new Vue({
             disabled: false,
             validateFieldNotExists: false,
         },
+        tempHeaders: [],
         tempBodyFields: [],
         tempProperties: [],
         tempExtractList: [],
@@ -43,6 +45,7 @@ new Vue({
             this.apiTest = {
                 url: '',
                 method: 'GET',
+                headers: [],
                 bodyFields: [],
                 contentType: 'application/json',
                 expectStatusCode: 200,
@@ -71,6 +74,7 @@ new Vue({
             this.apiTest.bodyFields = this.tempBodyFields;
             this.apiTest.properties = this.tempProperties;
             this.apiTest.extractList = this.tempExtractList;
+            this.apiTest.headers = this.tempHeaders;
 
             if (this.editIndex !== null) {
                 this.apiTests[this.editIndex] = { ...this.apiTest };
@@ -131,6 +135,25 @@ new Vue({
             const field = this.tempProperties[index];
             field.disabled = !field.disabled;
         },
+        addHeaderField() {
+            this.tempHeaders.push({ key: '', value: '', disabled: false, isAlias: false });
+            this.$nextTick(() => {
+                const refs = this.$refs.headerField;
+                const lastEl = Array.isArray(refs) ? refs[refs.length - 1] : refs;
+
+                if (lastEl && typeof lastEl.scrollIntoView === 'function') {
+                    lastEl.scrollIntoView({ block: 'center' });
+                    const input = lastEl?.querySelector('input');
+                    if (input) input.focus();
+                }
+            });
+        },
+        removeHeaderField(index) {
+            this.tempHeaders.splice(index, 1);
+        },
+        toggleHeaderDisable(index) {
+            this.tempHeaders[index].disabled = !this.tempHeaders[index].disabled;
+        },
         editTest(index) {
             const test = this.apiTests[index];
             this.apiTest = { ...test };
@@ -138,6 +161,7 @@ new Vue({
             this.tempBodyFields = test.bodyFields.map(field => ({ ...field }));
             this.tempProperties = test.properties.map(prop => ({ ...prop }));
             this.tempExtractList = (test.extractList || []).map(item => ({ ...item }));
+            this.tempHeaders = test.headers?.map(h => ({ ...h })) || [];
 
             this.editIndex = index;
             this.apiTestModal = true;
@@ -175,6 +199,7 @@ new Vue({
             this.tempBodyFields = [];
             this.tempProperties = [];
             this.tempExtractList = [];
+            this.tempHeaders = [];
         },
         startTest() {
             this.isDisabled = true;

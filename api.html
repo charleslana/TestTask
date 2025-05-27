@@ -65,6 +65,10 @@
                                     <div>Method: {{ test.method }}</div>
                                     <div>Content-Type: {{ test.contentType }}</div>
                                     <div>Status Code esperado: {{ test.expectStatusCode }}</div>
+                                    <div v-if="test.headers && test.headers.filter(field => !field.disabled).length">
+                                        Headers: {{ test.headers.filter(field =>
+                                        !field.disabled).map(field => `${field.key}: ${field.value}`).join(', ') }}
+                                    </div>
                                     <div
                                         v-if="test.bodyFields && test.bodyFields.filter(field => !field.disabled).length">
                                         Data: {{ test.bodyFields.filter(field =>
@@ -77,6 +81,10 @@
                                     </div>
                                     <div v-if="test.validateFieldNotExists">
                                         Validar campo não existente no retorno da API
+                                    </div>
+                                    <div v-if="test.extractList && test.extractList.length">
+                                        Extrações de campos: {{ test.extractList.map(field => `${field.key}:
+                                        ${field.alias}`).join(', ') }}
                                     </div>
                                     <div class="buttons mt-5">
                                         <button class="button is-small" @click="editTest(index)">Editar</button>
@@ -163,6 +171,47 @@
                     </div>
 
                     <div class="field">
+                        <label class="label">Headers (opcional)</label>
+                        <div class="control mb-4">
+                            <button class="button" @click="addHeaderField">Adicionar Header</button>
+                        </div>
+
+                        <div v-for="(header, index) in tempHeaders" :key="index" class="box mb-3" ref="headerField"
+                            refInFor>
+                            <div class="field is-grouped is-align-items-center">
+                                <div class="control is-expanded">
+                                    <input class="input" type="text" v-model="header.key" placeholder="Chave"
+                                        :disabled="header.disabled" />
+                                </div>
+                                <div class="control is-expanded">
+                                    <input class="input" type="text" v-model="header.value" placeholder="Valor"
+                                        :disabled="header.disabled" />
+                                </div>
+                                <div class="control">
+                                    <button class="button is-danger" @click="removeHeaderField(index)">Excluir</button>
+                                </div>
+                                <div class="control">
+                                    <button class="button is-warning" @click="toggleHeaderDisable(index)">
+                                        {{ header.disabled ? 'Habilitar' : 'Desabilitar' }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Checkbox Usar nome interno -->
+                            <div class="field mt-2 is-flex is-align-items-center">
+                                <label class="checkbox mr-2">
+                                    <input type="checkbox" v-model="header.isAlias">
+                                    Usar nome interno
+                                </label>
+                                <span class="has-tooltip-arrow has-tooltipl-multiline"
+                                    data-tooltip="Ao marcar essa opção,&#10;será utilizado o alias de um campo&#10;que você extraiu da resposta anterior">
+                                    <i class="material-icons">info</i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
                         <label class="label is-flex is-align-items-center">
                             Data / Body (opcional)
                             <i class="material-icons ml-2 is-clickable" @click="isModalInfo = true">info</i>
@@ -198,7 +247,7 @@
                                     Usar nome interno
                                 </label>
                                 <span class="has-tooltip-arrow has-tooltipl-multiline"
-                                    data-tooltip="Ao marcar essa opção,&#10;será utilizado o alias de um campo&#10;que você extraiu da resposta">
+                                    data-tooltip="Ao marcar essa opção,&#10;será utilizado o alias de um campo&#10;que você extraiu da resposta anterior">
                                     <i class="material-icons">info</i>
                                 </span>
                             </div>

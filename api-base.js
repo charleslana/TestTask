@@ -37,7 +37,7 @@ export class ApiBase extends Base {
             if (response) {
                 if (response.status() !== api.expectStatusCode) {
                     throw new Error(
-                        `Falha na requisição ${api.method} para ${response.url()}. Status ${response.status()}. Response ${await response.text()}`
+                        `Falha na requisição ${api.method} para ${response.url()}. Status ${response.status()} mas esperado ${api.expectStatusCode}. Response ${await response.text()}`
                     );
                 }
                 console.log('Resposta da requisição:');
