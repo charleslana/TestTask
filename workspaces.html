@@ -18,13 +18,40 @@
             <button class="button is-link" @click="importWorkspace">Importar Workspace</button>
         </div>
 
-        <div class="box" v-for="(workspace, index) in workspaces" :key="index">
+        <div class="field mb-4">
+            <label class="label">Pesquisar</label>
+            <div class="control">
+                <input class="input is-shadowless is-fullwidth" type="text" v-model.trim="searchTerm"
+                    placeholder="Digite o nome do workspace" />
+            </div>
+        </div>
+
+        <div class="field mb-4">
+            <label class="label">Filtro de Tipo</label>
+            <div class="control">
+                <div class="select is-fullwidth">
+                    <select v-model="testTypeFilter">
+                        <option value="">Todos</option>
+                        <option value="e2e">Testes E2E</option>
+                        <option value="api">Testes API</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="box" v-for="(workspace, index) in filteredWorkspaces" :key="index" :ref="'workspace_' + index">
             <div class="level">
                 <div class="level-left">
                     <div>
                         <strong>Nome:</strong>
                         <span>{{ workspace.name }}</span>
                         <a href="#" class="ml-2" @click.prevent="openEditModal(index)">✏️ Editar nome</a><br />
+                        <div v-if="workspace.testType === 'e2e'">
+                            <strong>Quantidade de ações:</strong> <span>{{ workspace.test.actions.length }}</span><br />
+                        </div>
+                        <div v-if="workspace.testType === 'api'">
+                            <strong>Quantidade de apis:</strong> <span>{{ workspace.apiTests.length }}</span><br />
+                        </div>
                         <strong>Versão:</strong> {{ workspace.version }}<br />
                         <div class="is-flex is-align-items-center">
                             <strong class="mr-2">Tipo:</strong>
@@ -43,6 +70,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div v-if="filteredWorkspaces.length === 0" class="notification">
+            Nenhum workspace encontrado.
         </div>
 
         <!-- Modal -->
@@ -66,6 +97,7 @@
                         <div class="control">
                             <div class="select is-fullwidth">
                                 <select v-model="newWorkspaceTestType" required>
+                                    <option value="">Todos</option>
                                     <option value="e2e">Testes E2E</option>
                                     <option value="api">Testes API</option>
                                 </select>
@@ -136,6 +168,8 @@
                 showEditModal: false,
                 editWorkspaceIndex: null,
                 editWorkspaceName: '',
+                searchTerm: '',
+                testTypeFilter: ''
             },
             computed: {
                 canCreateWorkspace() {
@@ -146,6 +180,18 @@
                 canEditWorkspace() {
                     return this.editWorkspaceName.trim() !== '' &&
                         this.editWorkspaceName.trim().length <= 50;
+                },
+                filteredWorkspaces() {
+                    let filtered = this.workspaces;
+                    if (this.searchTerm) {
+                        filtered = filtered.filter(workspace =>
+                            workspace.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+                        );
+                    }
+                    if (this.testTypeFilter) {
+                        filtered = filtered.filter(workspace => workspace.testType === this.testTypeFilter);
+                    }
+                    return filtered;
                 }
             },
             methods: {
@@ -165,6 +211,14 @@
                         this.newWorkspaceName = '';
                         this.newWorkspaceTestType = 'e2e';
                         this.showCreateModal = false;
+
+                        this.$nextTick(() => {
+                            const lastIndex = this.workspaces.length - 1;
+                            const lastWorkspaceRef = this.$refs['workspace_' + lastIndex];
+                            if (lastWorkspaceRef && lastWorkspaceRef.length) {
+                                lastWorkspaceRef[lastWorkspaceRef.length - 1].scrollIntoView();
+                            }
+                        });
                     }
                 },
                 deleteWorkspace(index) {
@@ -195,6 +249,13 @@
                         this.workspaces.push(imported);
                         this.saveWorkspaces();
                         alert('Workspace importado com sucesso!');
+                        this.$nextTick(() => {
+                            const lastIndex = this.workspaces.length - 1;
+                            const lastWorkspaceRef = this.$refs['workspace_' + lastIndex];
+                            if (lastWorkspaceRef && lastWorkspaceRef.length) {
+                                lastWorkspaceRef[lastWorkspaceRef.length - 1].scrollIntoView();
+                            }
+                        });
                     } else {
                         alert('Falha ao importar: o arquivo pode estar corrompido ou com estrutura inválida.');
                     }
@@ -219,6 +280,14 @@
                     copy.name = `${original.name} (Cópia)`;
                     this.workspaces.push(copy);
                     this.saveWorkspaces();
+
+                    this.$nextTick(() => {
+                        const lastIndex = this.workspaces.length - 1;
+                        const lastWorkspaceRef = this.$refs['workspace_' + lastIndex];
+                        if (lastWorkspaceRef && lastWorkspaceRef.length) {
+                            lastWorkspaceRef[lastWorkspaceRef.length - 1].scrollIntoView();
+                        }
+                    });
                 },
                 getTestTypeHtml(testType) {
                     if (testType === 'e2e') {
@@ -245,6 +314,13 @@
                             this.workspaces.push(workspace);
                             this.saveWorkspaces();
                             alert('Workspace de exemplo importado com sucesso!');
+                            this.$nextTick(() => {
+                                const lastIndex = this.workspaces.length - 1;
+                                const lastWorkspaceRef = this.$refs['workspace_' + lastIndex];
+                                if (lastWorkspaceRef && lastWorkspaceRef.length) {
+                                    lastWorkspaceRef[lastWorkspaceRef.length - 1].scrollIntoView();
+                                }
+                            });
                         } else {
                             alert('Falha ao importar exemplo.');
                         }

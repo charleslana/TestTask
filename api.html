@@ -13,7 +13,10 @@
     <div id="app">
         <nav class="navbar">
             <div class="navbar-brand">
-                <p class="navbar-item is-uppercase has-text-weight-bold">Testes de API</p>
+                <p class="navbar-item is-uppercase has-text-weight-bold">
+                    <i class="material-icons ml-2">play_for_work</i>
+                    {{ workspace?.name || 'Sem nome' }}
+                </p>
                 <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click="toggleMenu">
                     <span aria-hidden="true"></span>
                     <span aria-hidden="true"></span>
@@ -89,6 +92,8 @@
                                     <div class="buttons mt-5">
                                         <button class="button is-small" @click="editTest(index)">Editar</button>
                                         <button class="button is-small" @click="duplicateTest(index)">Duplicar</button>
+                                        <button class="button is-small" @click="copyToAnotherWorkspace(index)">Copiar
+                                            para outro workspace</button>
                                         <button class="button is-small is-danger"
                                             @click="openModalDeleteConfirm(index)">Excluir</button>
                                     </div>
@@ -391,6 +396,39 @@
                 </div>
             </div>
             <button class="modal-close is-large" aria-label="close" @click="isModalInfo = false"></button>
+        </div>
+        <!---->
+
+        <!-- Modal para copiar ação para outro workspace -->
+        <div class="modal" :class="{ 'is-active': modalCopyWorkspace }">
+            <div class="modal-background" @click="closeCopyModal"></div>
+            <div class="modal-card" @click.stop>
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Copiar para outro Workspace</p>
+                    <button class="delete" aria-label="close" @click="closeCopyModal"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Selecionar Workspace</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select v-model="selectedWorkspace">
+                                    <option v-for="(ws, idx) in availableWorkspaces" :key="idx" :value="ws.index">
+                                        {{ ws.workspace.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-success" @click="copyActionToWorkspace"
+                            :disabled="selectedWorkspace === null">Copiar</button>
+                        <button class="button" @click="closeCopyModal">Cancelar</button>
+                    </div>
+                </footer>
+            </div>
         </div>
         <!---->
     </div>

@@ -135,6 +135,8 @@
                 <section class="modal-card-body">
                     <div class="buttons">
                         <button class="button is-link" @click="exportPDF">Exportar como PDF</button>
+                        <button class="button is-link" @click="exportCSV">Exportar como CSV</button>
+                        <button class="button is-link" @click="exportXLS">Exportar como XLS</button>
                     </div>
                     <div v-if="showSuccessNotification" class="notification is-success mt-3">
                         Relatório exportado com sucesso!
@@ -198,6 +200,7 @@
     <script src="vue@2.js"></script>
     <script src="report-api.js"></script>
     <script src="html2pdf.bundle.min.js"></script>
+    <script src="xlsx.full.min.js"></script>
 </body>
 
 </html>

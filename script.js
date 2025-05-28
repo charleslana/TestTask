@@ -27,7 +27,8 @@ new Vue({
             { type: 'select', name: 'Select' },
             { type: 'dragAndDrop', name: 'Arrastar e Soltar' },
             { type: 'iframeType', name: 'Digitar no iframe' },
-            { type: 'clickWaitForResponse', name: 'Clique e espera pela resposta' }
+            { type: 'clickWaitForResponse', name: 'Clique e espera pela resposta' },
+            { type: 'iframeClick', name: 'Clicar no iframe' }
         ],
         searchTerm: '',
         actionCurrent: null,
@@ -46,6 +47,10 @@ new Vue({
         newUrl: '',
         editUrlIndex: null,
         isModalInfo: false,
+        modalCopyWorkspace: false,
+        selectedWorkspace: null,
+        availableWorkspaces: [],
+        selectedActionIndex: null
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {
@@ -86,7 +91,7 @@ new Vue({
             if (['fill', 'type', 'assertText', 'select', 'dragAndDrop', 'iframeType', 'clickWaitForResponse'].includes(this.actionCurrent?.type)) {
                 return !!this.actionForm.text.trim();
             }
-            if (['iframeType'].includes(this.actionCurrent?.type)) {
+            if (['iframeType', 'iframeClick'].includes(this.actionCurrent?.type)) {
                 return !!this.actionForm.selector2.trim();
             }
             return true;
@@ -332,6 +337,34 @@ new Vue({
             };
             this.workspace.test.actions.splice(index + 1, 0, newAction);
         },
+        copyToAnotherWorkspace(actionIndex) {
+            const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+            const selectedWorkspaceIndex = parseInt(localStorage.getItem('selectedWorkspaceIndex'));
+            this.availableWorkspaces = workspaces.reduce((acc, ws, wsIndex) => {
+                if (ws.testType === 'e2e' && wsIndex !== selectedWorkspaceIndex) {
+                    acc.push({ index: wsIndex, workspace: ws });
+                }
+                return acc;
+            }, []);
+            this.selectedWorkspace = null;
+            this.selectedActionIndex = actionIndex;
+            this.modalCopyWorkspace = true;
+        },
+        closeCopyModal() {
+            this.modalCopyWorkspace = false;
+        },
+        copyActionToWorkspace() {
+            const actionToCopy = this.workspace.test.actions[this.selectedActionIndex];
+            const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+            const targetWorkspace = workspaces[this.selectedWorkspace];
+            if (targetWorkspace) {
+                if (!targetWorkspace.test) targetWorkspace.test = { actions: [] };
+                targetWorkspace.test.actions.push(JSON.parse(JSON.stringify(actionToCopy)));
+                localStorage.setItem('workspaces', JSON.stringify(workspaces));
+            }
+            alert('Ação copiada com sucesso!');
+            this.closeCopyModal();
+        }
     },
     beforeDestroy() {
         window.electron.ipcRenderer.removeAllListeners('enable-start-button');

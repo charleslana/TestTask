@@ -15,6 +15,7 @@ function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 1280,
         height: 720,
+        icon: path.join(__dirname, 'public/icon.png'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -161,6 +162,11 @@ function createWindow() {
                                 label: 'Importar Exemplo Saucedemo',
                                 enabled: isWorkspacePage,
                                 click: () => mainWindow.webContents.send('import-example', '14-Saucedemo')
+                            },
+                            {
+                                label: 'Importar Exemplo Clicar Iframe',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '15-Exemplo Clicar Iframe')
                             }
                         ]
                     },
@@ -207,6 +213,7 @@ function createBusyWindow() {
     busyWindow = new BrowserWindow({
         width: 1280,
         height: 720,
+        icon: path.join(__dirname, 'public/icon.png'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true
@@ -247,6 +254,7 @@ function createAboutWindow() {
         height: 200,
         resizable: false,
         maximizable: false,
+        icon: path.join(__dirname, 'public/icon.png'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -263,6 +271,7 @@ function createConfigWindow() {
         height: 720,
         resizable: true,
         maximizable: true,
+        icon: path.join(__dirname, 'public/icon.png'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -279,6 +288,7 @@ function createConfigApiWindow() {
         height: 720,
         resizable: true,
         maximizable: true,
+        icon: path.join(__dirname, 'public/icon.png'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -293,6 +303,7 @@ function createReportWindow() {
     const win = new BrowserWindow({
         width: 1280,
         height: 720,
+        icon: path.join(__dirname, 'public/icon.png'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -307,6 +318,7 @@ function createReportApiWindow() {
     const win = new BrowserWindow({
         width: 1280,
         height: 720,
+        icon: path.join(__dirname, 'public/icon.png'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -395,6 +407,10 @@ async function runTestOnce(test, config, base, event, lastTest) {
             case 'clickWaitForResponse':
                 result = await base.clickWaitForResponse(action.selector, action.text);
                 result.actionType = 'clickWaitForResponse';
+                break;
+            case 'iframeClick':
+                result = await base.iframeClick(action.selector2, action.selector);
+                result.actionType = 'iframeClick';
                 break;
             default:
                 throw new Error('Nenhuma ação foi encontrada');
@@ -733,7 +749,9 @@ ipcMain.handle('import-workspace', async () => {
         const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
         try {
             const json = JSON.parse(fileContent);
-            const isValid = json.name && json.version && json.testType && json.test?.actions && typeof json.test.url === 'string';
+            const hasBasicFields = json.name && json.version && json.testType && json.test?.actions && typeof json.test.url === 'string';
+            const isValidApi = json.testType === 'api' ? Array.isArray(json.apiTests) : true;
+            const isValid = hasBasicFields && isValidApi;
             return isValid ? json : null;
         } catch (e) {
             return null;

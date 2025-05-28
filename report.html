@@ -135,6 +135,8 @@
                 <section class="modal-card-body">
                     <div class="buttons">
                         <button class="button is-link" @click="exportPDF">Exportar como PDF</button>
+                        <button class="button is-link" @click="exportCSV">Exportar como CSV</button>
+                        <button class="button is-link" @click="exportXLS">Exportar como XLS</button>
                     </div>
                     <div v-if="showSuccessNotification" class="notification is-success mt-3">
                         Relatório exportado com sucesso!
@@ -154,7 +156,7 @@
             <h1 class="title is-4 has-text-dark">TestTask</h1>
             <div class="has-text-grey">Relatório gerado em {{ new Date().toLocaleString('pt-BR') }}</div>
             <!-- Resumo de status dos testes -->
-            <div style="margin: 1rem 0;">
+            <div style="margin: 1rem 0;" v-if="lastTest.tests">
                 <p :class="{
                     'has-text-success': testsPassed === lastTest.tests.length,
                     'has-text-danger': testsPassed !== lastTest.tests.length
@@ -200,6 +202,7 @@
     <script src="vue@2.js"></script>
     <script src="report.js"></script>
     <script src="html2pdf.bundle.min.js"></script>
+    <script src="xlsx.full.min.js"></script>
 </body>
 
 </html>

@@ -459,4 +459,42 @@ export class Base {
         }
         return { executionTime, description, success, fail, screenshot }
     }
+
+    async iframeClick(iframeSelector, selector) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Clicar no seletor ${selector} dentro do iframe ${iframeSelector}`;
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            iframeSelector = this.getSelectorWithXpath(iframeSelector);
+            selector = this.getSelectorWithXpath(selector);
+            await this.handleIframeClick(iframeSelector, selector);
+            success = 'Clique no iframe realizado com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao clicar no iframe: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot }
+    }
+
+    async handleIframeClick(iframeSelector, selector) {
+        const frame = await this.findFrame(iframeSelector);
+        if (frame) {
+            const elementHandle = await frame.$(selector);
+            if (elementHandle) {
+                await elementHandle.click();
+            } else {
+                throw new Error(`Elemento ${selector} não encontrado no iframe`);
+            }
+        } else {
+            throw new Error(`Iframe com seletor ${iframeSelector} não encontrado`);
+        }
+    }
 }

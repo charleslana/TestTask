@@ -5,6 +5,7 @@ new Vue({
         testNotification: false,
         testFail: '',
         totalTime: 0,
+        workspace: {},
         apiTests: [],
         apiTest: {
             url: '',
@@ -27,6 +28,10 @@ new Vue({
         modalDeleteConfirm: false,
         deleteIndex: null,
         isModalInfo: false,
+        modalCopyWorkspace: false,
+        selectedWorkspace: null,
+        availableWorkspaces: [],
+        selectedApiIndex: null
     },
     computed: {
         isApiTestValid() {
@@ -187,6 +192,7 @@ new Vue({
             if (selectedIndex !== null) {
                 const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
                 if (workspaces[selectedIndex]) {
+                    this.workspace = workspaces[selectedIndex];
                     this.apiTests = workspaces[selectedIndex].apiTests || [];
                 }
             }
@@ -273,6 +279,36 @@ new Vue({
         removeExtractField(index) {
             this.tempExtractList.splice(index, 1);
         },
+        copyToAnotherWorkspace(apiIndex) {
+            const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+            const selectedWorkspaceIndex = parseInt(localStorage.getItem('selectedWorkspaceIndex'));
+            this.availableWorkspaces = workspaces.reduce((acc, ws, wsIndex) => {
+                if (ws.testType === 'api' && wsIndex !== selectedWorkspaceIndex) {
+                    acc.push({ index: wsIndex, workspace: ws });
+                }
+                return acc;
+            }, []);
+            this.selectedWorkspace = null;
+            this.selectedApiIndex = apiIndex;
+            this.modalCopyWorkspace = true;
+        },
+        closeCopyModal() {
+            this.modalCopyWorkspace = false;
+        },
+        copyActionToWorkspace() {
+            const apiToCopy = this.apiTests[this.selectedApiIndex];
+            const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
+            const targetWorkspace = workspaces[this.selectedWorkspace];
+            if (targetWorkspace) {
+                if (!targetWorkspace.apiTests) {
+                    targetWorkspace.apiTests = [];
+                }
+                targetWorkspace.apiTests.push(JSON.parse(JSON.stringify(apiToCopy)));
+                localStorage.setItem('workspaces', JSON.stringify(workspaces));
+            }
+            alert('API copiada com sucesso!');
+            this.closeCopyModal();
+        }
     },
     mounted() {
         window.electron.ipcRenderer.on('enable-start-button', () => {

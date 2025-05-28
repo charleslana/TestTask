@@ -12,7 +12,10 @@
     <div id="app">
         <nav class="navbar" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
-                <p class="navbar-item is-uppercase has-text-weight-bold">{{ workspace?.name || 'Sem nome' }}</p>
+                <p class="navbar-item is-uppercase has-text-weight-bold">
+                    <i class="material-icons ml-2">language</i>
+                    {{ workspace?.name || 'Sem nome' }}
+                </p>
                 <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
                     data-target="navbarBasicExample" @click="toggleMenu">
                     <span aria-hidden="true"></span>
@@ -99,6 +102,7 @@
                                     <a class="card-footer-item" @click="editAction(index)"
                                         v-if="action.type !== 'enter' && action.type !== 'reload'">Editar</a>
                                     <a class="card-footer-item" @click="duplicateAction(index)">Duplicar</a>
+                                    <a class="card-footer-item" @click="copyToAnotherWorkspace(index)">Copiar</a>
                                     <a class="card-footer-item has-text-danger"
                                         @click="showModalDeleteConfirm(index)">Excluir</a>
                                 </footer>
@@ -174,7 +178,8 @@
                 </header>
                 <section class="modal-card-body">
                     <!-- IFrame selector -->
-                    <div class="field" v-if="actionCurrent && ['iframeType'].includes(actionCurrent.type)">
+                    <div class="field"
+                        v-if="actionCurrent && ['iframeType', 'iframeClick'].includes(actionCurrent.type)">
                         <label class="label is-flex is-align-items-center">
                             IFrame seletor
                             <i class="material-icons ml-2 is-clickable" v-if="actionLabel === 'Seletor'"
@@ -292,6 +297,39 @@
                 </div>
             </div>
             <button class="modal-close is-large" aria-label="close" @click="isModalInfo = false"></button>
+        </div>
+        <!---->
+
+        <!-- Modal para copiar ação para outro workspace -->
+        <div class="modal" :class="{ 'is-active': modalCopyWorkspace }">
+            <div class="modal-background" @click="closeCopyModal"></div>
+            <div class="modal-card" @click.stop>
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Copiar para outro Workspace</p>
+                    <button class="delete" aria-label="close" @click="closeCopyModal"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Selecionar Workspace</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select v-model="selectedWorkspace">
+                                    <option v-for="(ws, idx) in availableWorkspaces" :key="idx" :value="ws.index">
+                                        {{ ws.workspace.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <div class="buttons">
+                        <button class="button is-success" @click="copyActionToWorkspace"
+                            :disabled="selectedWorkspace === null">Copiar</button>
+                        <button class="button" @click="closeCopyModal">Cancelar</button>
+                    </div>
+                </footer>
+            </div>
         </div>
         <!---->
     </div>

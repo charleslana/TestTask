@@ -1,0 +1,18 @@
+{
+  "name": "Exemplo Clicar Iframe",
+  "version": "0.0.1",
+  "testType": "e2e",
+  "test": {
+    "url": "https://practice.expandtesting.com/iframe",
+    "actions": [
+      {
+        "type": "iframeClick",
+        "selector": "#btn-subscribe",
+        "text": "",
+        "selector2": "#email-subscribe",
+        "disabled": false
+      }
+    ]
+  },
+  "apiTests": []
+}
