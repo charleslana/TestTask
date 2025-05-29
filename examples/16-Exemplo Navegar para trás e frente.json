@@ -1,0 +1,32 @@
+{
+  "name": "Exemplo Navegar para trás e frente",
+  "version": "1.0.0",
+  "testType": "e2e",
+  "test": {
+    "url": "https://front.serverest.dev",
+    "actions": [
+      {
+        "type": "click",
+        "selector": "//a[normalize-space()='Cadastre-se']",
+        "text": "",
+        "selector2": "",
+        "disabled": false
+      },
+      {
+        "type": "navigateBack",
+        "selector": "",
+        "text": "",
+        "selector2": "",
+        "disabled": false
+      },
+      {
+        "type": "navigateForward",
+        "selector": "",
+        "text": "",
+        "selector2": "",
+        "disabled": false
+      }
+    ]
+  },
+  "apiTests": []
+}

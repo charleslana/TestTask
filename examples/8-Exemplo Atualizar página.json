@@ -1,6 +1,6 @@
 {
   "name": "Exemplo Atualizar página",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "testType": "e2e",
   "test": {
     "url": "https://www.saucedemo.com/v1/",

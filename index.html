@@ -66,13 +66,12 @@
                     </div>
                     <div class="box">
                         <button class="button is-medium" :disabled="!workspace.test.url"
-                            @click="toggleModalAction">Adicionar
-                            Ações</button>
+                            @click="openActionModal">Adicionar Ações</button>
                     </div>
                     <div class="box mt-5" v-if="workspace.test.actions.length">
                         <p class="title is-5">Ações configuradas</p>
                         <draggable v-model="workspace.test.actions" :options="{ animation: 150 }">
-                            <div v-for="(action, index) in workspace.test.actions" :key="index"
+                            <div v-for="(action, index) in workspace.test.actions" :key="index" :ref="'action_' + index"
                                 :class="['card', 'mb-4', { 'disabled-card': action.disabled }]" style="cursor: move;">
                                 <header class="card-header">
                                     <p class="card-header-title">
@@ -91,7 +90,8 @@
                                         <p v-if="action.selector2"><strong>Seletor iframe:</strong>
                                             {{ action.selector2 }}
                                         </p>
-                                        <p v-if="action.type !== 'enter' && action.type !== 'reload'">
+                                        <p
+                                            v-if="!['enter', 'reload', 'navigateBack', 'navigateForward'].includes(action.type)">
                                             <strong>{{action.type === 'navigate' ? 'URL' : 'Seletor' }}:</strong>
                                             {{action.selector }}
                                         </p>
@@ -100,7 +100,7 @@
                                 </div>
                                 <footer class="card-footer">
                                     <a class="card-footer-item" @click="editAction(index)"
-                                        v-if="action.type !== 'enter' && action.type !== 'reload'">Editar</a>
+                                        v-if="!['enter', 'reload', 'navigateBack', 'navigateForward'].includes(action.type)">Editar</a>
                                     <a class="card-footer-item" @click="duplicateAction(index)">Duplicar</a>
                                     <a class="card-footer-item" @click="copyToAnotherWorkspace(index)">Copiar</a>
                                     <a class="card-footer-item has-text-danger"
@@ -142,11 +142,11 @@
         </div>
         <!-- Modal actions -->
         <div class="modal" :class="{ 'is-active': modalAction }">
-            <div class="modal-background" @click="toggleModalAction"></div>
+            <div class="modal-background" @click="closeActionModal"></div>
             <div class="modal-card" @click.stop>
                 <header class="modal-card-head">
                     <p class="modal-card-title">Ações</p>
-                    <button class="delete" aria-label="close" @click="toggleModalAction"></button>
+                    <button class="delete" aria-label="close" @click="closeActionModal"></button>
                 </header>
                 <section class="modal-card-body" id="modal-card-body">
                     <input class="input is-medium mb-5 is-shadowless" type="text" placeholder="Pesquisar ações"
@@ -162,7 +162,7 @@
                 </section>
                 <footer class="modal-card-foot">
                     <div class="buttons">
-                        <button class="button" @click="toggleModalAction">Cancelar</button>
+                        <button class="button" @click="closeActionModal">Cancelar</button>
                     </div>
                 </footer>
             </div>
@@ -191,7 +191,8 @@
                         </div>
                     </div>
                     <!-- Seletor ou URL -->
-                    <div class="field" v-if="actionCurrent?.type !== 'enter' && actionCurrent?.type !== 'reload'">
+                    <div class="field"
+                        v-if="actionCurrent && !['enter', 'reload', 'navigateBack', 'navigateForward'].includes(actionCurrent.type)">
                         <label class="label is-flex is-align-items-center">
                             {{ actionLabel }}
                             <i class="material-icons ml-2 is-clickable" v-if="actionLabel === 'Seletor'"

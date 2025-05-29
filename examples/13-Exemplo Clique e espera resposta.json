@@ -1,6 +1,6 @@
 {
   "name": "Exemplo Clique e espera resposta",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "testType": "e2e",
   "test": {
     "url": "https://practice.expandtesting.com/api/api-docs/#/Monitor%20Health/monitorHealth",

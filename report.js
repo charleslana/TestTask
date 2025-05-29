@@ -78,6 +78,9 @@ new Vue({
                 iframeType: 'Digitar no iframe',
                 clickWaitForResponse: 'Clique e espera pela resposta',
                 iframeClick: 'Clicar no iframe',
+                navigateBack: 'Navegar para trás',
+                navigateForward: 'Navegar para frente',
+                focus: 'Focar'
             };
             return map[type] || 'Ação desconhecida';
         },
@@ -143,6 +146,14 @@ new Vue({
         },
     },
     mounted() {
+        const theme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+
+        window.electronAPI.onThemeChange((newTheme) => {
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
         this.lastTest = this.getLastTest();
     }
 });

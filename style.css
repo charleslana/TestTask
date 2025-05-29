@@ -59,3 +59,9 @@
 * {
     font-family: "IBM Plex Sans", sans-serif;
 }
+
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}

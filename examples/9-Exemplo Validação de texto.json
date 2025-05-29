@@ -1,6 +1,6 @@
 {
   "name": "Exemplo Validação de texto",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "testType": "e2e",
   "test": {
     "url": "https://front.serverest.dev",

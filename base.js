@@ -497,4 +497,72 @@ export class Base {
             throw new Error(`Iframe com seletor ${iframeSelector} não encontrado`);
         }
     }
+
+    async navigateBack() {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = 'Navegando de volta para a página anterior';
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            await this.page.goBack({ waitUntil: this.navigateWaitUntil, timeout: this.navigateTimeout });
+            success = 'Navegação para trás realizada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao navegar para trás: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot };
+    }
+
+    async navigateForward() {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = 'Navegando para a próxima página';
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            await this.page.goForward({ waitUntil: this.navigateWaitUntil, timeout: this.navigateTimeout });
+            success = 'Navegação para frente realizada com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao navegar para frente: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot };
+    }
+
+    async focus(selector) {
+        const startTime = Date.now();
+        let executionTime = 0;
+        const description = `Focando no seletor ${selector}`;
+        let success = null;
+        let fail = null;
+        let screenshot = null;
+        try {
+            selector = this.getSelectorWithXpath(selector);
+            await this.waitForSelector(selector);
+            await this.page.focus(selector);
+            success = 'Foco aplicado com sucesso!';
+            console.log(success);
+        } catch (err) {
+            fail = `Erro ao aplicar foco: ${err}`;
+            console.error(fail);
+        } finally {
+            const endTime = Date.now();
+            executionTime = endTime - startTime;
+            screenshot = await this.getScreenshot();
+        }
+        return { executionTime, description, success, fail, screenshot };
+    }
 }

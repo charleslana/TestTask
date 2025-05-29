@@ -1,6 +1,6 @@
 {
   "name": "Exemplo Clicar Iframe",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "testType": "e2e",
   "test": {
     "url": "https://practice.expandtesting.com/iframe",

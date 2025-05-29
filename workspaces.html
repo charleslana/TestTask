@@ -11,10 +11,10 @@
 
 <body>
     <div id="workspace-app" class="container mt-6">
-        <h1 class="title has-text-centered">Workspaces</h1>
+        <h1 class="title has-text-centered">Workspaces (Total: {{ totalWorkspaces }})</h1>
 
         <div class="buttons is-centered my-4">
-            <button class="button is-primary" @click="showCreateModal = true">Criar Workspace</button>
+            <button class="button is-primary" @click="openCreateModal">Criar Workspace</button>
             <button class="button is-link" @click="importWorkspace">Importar Workspace</button>
         </div>
 
@@ -78,11 +78,11 @@
 
         <!-- Modal -->
         <div class="modal" :class="{ 'is-active': showCreateModal }">
-            <div class="modal-background" @click="showCreateModal = false"></div>
+            <div class="modal-background" @click="closeCreateModal"></div>
             <div class="modal-card">
                 <header class="modal-card-head">
                     <p class="modal-card-title">Novo Workspace</p>
-                    <button class="delete" aria-label="close" @click="showCreateModal = false"></button>
+                    <button class="delete" aria-label="close" @click="closeCreateModal"></button>
                 </header>
                 <section class="modal-card-body">
                     <div class="field">
@@ -109,18 +109,18 @@
                     <div class="buttons">
                         <button class="button is-success" @click="confirmCreateWorkspace"
                             :disabled="!canCreateWorkspace">Criar</button>
-                        <button class="button" @click="showCreateModal = false">Cancelar</button>
+                        <button class="button" @click="closeCreateModal">Cancelar</button>
                     </div>
                 </footer>
             </div>
         </div>
         <!-- Modal Editar -->
         <div class="modal" :class="{ 'is-active': showEditModal }">
-            <div class="modal-background" @click="showEditModal = false"></div>
+            <div class="modal-background" @click="closeEditModal"></div>
             <div class="modal-card">
                 <header class="modal-card-head">
                     <p class="modal-card-title">Editar Nome do Workspace</p>
-                    <button class="delete" aria-label="close" @click="showEditModal = false"></button>
+                    <button class="delete" aria-label="close" @click="closeEditModal"></button>
                 </header>
                 <section class="modal-card-body">
                     <div class="field">
@@ -148,7 +148,7 @@
                     <div class="buttons">
                         <button class="button is-success" @click="confirmEditWorkspace"
                             :disabled="!canEditWorkspace">Salvar</button>
-                        <button class="button" @click="showEditModal = false">Cancelar</button>
+                        <button class="button" @click="closeEditModal">Cancelar</button>
                     </div>
                 </footer>
             </div>
@@ -172,6 +172,9 @@
                 testTypeFilter: ''
             },
             computed: {
+                totalWorkspaces() {
+                    return this.workspaces.length;
+                },
                 canCreateWorkspace() {
                     return this.newWorkspaceName.trim() !== '' &&
                         this.newWorkspaceName.trim().length <= 50 &&
@@ -210,7 +213,7 @@
                         this.saveWorkspaces();
                         this.newWorkspaceName = '';
                         this.newWorkspaceTestType = 'e2e';
-                        this.showCreateModal = false;
+                        this.closeCreateModal();
 
                         this.$nextTick(() => {
                             const lastIndex = this.workspaces.length - 1;
@@ -260,16 +263,35 @@
                         alert('Falha ao importar: o arquivo pode estar corrompido ou com estrutura inválida.');
                     }
                 },
+                openCreateModal() {
+                    this.scrollPosition = window.scrollY;
+                    this.showCreateModal = true;
+                    document.body.classList.add('modal-open');
+                    document.body.style.top = `-${this.scrollPosition}px`;
+                },
+                closeCreateModal() {
+                    this.showCreateModal = false;
+                    document.body.classList.remove('modal-open');
+                    window.scrollTo(0, this.scrollPosition);
+                },
                 openEditModal(index) {
+                    this.scrollPosition = window.scrollY;
                     this.editWorkspaceIndex = index;
                     this.editWorkspaceName = this.workspaces[index].name;
                     this.showEditModal = true;
+                    document.body.classList.add('modal-open');
+                    document.body.style.top = `-${this.scrollPosition}px`;
+                },
+                closeEditModal() {
+                    this.showEditModal = false;
+                    document.body.classList.remove('modal-open');
+                    window.scrollTo(0, this.scrollPosition);
                 },
                 confirmEditWorkspace() {
                     if (this.canEditWorkspace) {
                         this.workspaces[this.editWorkspaceIndex].name = this.editWorkspaceName.trim();
                         this.saveWorkspaces();
-                        this.showEditModal = false;
+                        this.closeEditModal();
                         this.editWorkspaceIndex = null;
                         this.editWorkspaceName = '';
                     }
@@ -308,6 +330,14 @@
                 }
             },
             mounted() {
+                const theme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+
+                window.electronAPI.onThemeChange((newTheme) => {
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+
                 if (window.electronAPI?.onImportExample) {
                     window.electronAPI.onImportExample((workspace) => {
                         if (workspace) {

@@ -28,7 +28,10 @@ new Vue({
             { type: 'dragAndDrop', name: 'Arrastar e Soltar' },
             { type: 'iframeType', name: 'Digitar no iframe' },
             { type: 'clickWaitForResponse', name: 'Clique e espera pela resposta' },
-            { type: 'iframeClick', name: 'Clicar no iframe' }
+            { type: 'iframeClick', name: 'Clicar no iframe' },
+            { type: 'navigateBack', name: 'Navegar para trás' },
+            { type: 'navigateForward', name: 'Navegar para frente' },
+            { type: 'focus', name: 'Focar' }
         ],
         searchTerm: '',
         actionCurrent: null,
@@ -53,6 +56,14 @@ new Vue({
         selectedActionIndex: null
     },
     mounted() {
+        const theme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+
+        window.electronAPI.onThemeChange((newTheme) => {
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
         window.electron.ipcRenderer.on('enable-start-button', () => {
             this.isDisabled = false;
         });
@@ -86,8 +97,20 @@ new Vue({
             );
         },
         isValidActionForm() {
-            if (this.actionCurrent?.type === 'enter' || this.actionCurrent?.type === 'reload') return true;
-            if (!this.actionForm.selector.trim()) return false;
+            if (['enter', 'reload', 'navigateBack', 'navigateForward'].includes(this.actionCurrent?.type)) {
+                return true;
+            }
+            if (!this.actionForm.selector.trim()) {
+                return false;
+            }
+            if (['iframeType'].includes(this.actionCurrent?.type)) {
+                if (!this.actionForm.text.trim()) {
+                    return false;
+                }
+                if (!this.actionForm.selector2.trim()) {
+                    return false;
+                }
+            }
             if (['fill', 'type', 'assertText', 'select', 'dragAndDrop', 'iframeType', 'clickWaitForResponse'].includes(this.actionCurrent?.type)) {
                 return !!this.actionForm.text.trim();
             }
@@ -160,21 +183,28 @@ new Vue({
                 }
             }
         },
-        toggleModalAction() {
-            this.modalAction = !this.modalAction;
-            if (this.modalAction) {
-                this.$nextTick(() => {
-                    const modalBody = document.getElementById('modal-card-body');
-                    if (modalBody) {
-                        modalBody.scrollTop = 0;
-                    }
-                });
-                this.searchTerm = '';
-            }
+        openActionModal() {
+            this.scrollPosition = window.scrollY;
+            this.modalAction = true;
+            this.$nextTick(() => {
+                const modalBody = document.getElementById('modal-card-body');
+                if (modalBody) {
+                    modalBody.scrollTop = 0;
+                }
+            });
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
+        },
+        closeActionModal() {
+            this.modalAction = false;
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         closeModalAction() {
             this.modalAction = false;
             this.searchTerm = '';
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         selectAction(action) {
             this.actionCurrent = action;
@@ -182,6 +212,7 @@ new Vue({
             this.modalConfigAction = true;
         },
         editAction(index) {
+            this.scrollPosition = window.scrollY;
             const action = this.workspace.test.actions[index];
             this.editIndex = index;
             this.actionCurrent = this.actions.find(a => a.type === action.type);
@@ -191,6 +222,8 @@ new Vue({
                 selector2: action.selector2 || ''
             };
             this.modalConfigAction = true;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         deleteAction(index) {
             this.workspace.test.actions.splice(index, 1);
@@ -203,8 +236,9 @@ new Vue({
                 selector2: this.actionForm.selector2 || '',
                 disabled: false
             };
+            const actionsToSkip = ['enter', 'reload', 'navigateBack', 'navigateForward'];
 
-            if (this.actionCurrent.type !== 'enter' && this.actionCurrent.type !== 'reload') {
+            if (!actionsToSkip.includes(this.actionCurrent.type)) {
                 actionToSave.selector = this.actionForm.selector;
                 if (this.actionForm.text) {
                     actionToSave.text = this.actionForm.text;
@@ -223,6 +257,15 @@ new Vue({
 
             this.closeModalConfig();
             this.closeModalAction();
+
+            this.$nextTick(() => {
+                const lastIndex = this.workspace.test.actions.length - 1;
+                const lastActionRef = this.$refs[`action_${lastIndex}`];
+
+                if (lastActionRef) {
+                    lastActionRef.scrollIntoView();
+                }
+            });
         },
         closeModalConfig() {
             this.modalConfigAction = false;
@@ -231,12 +274,17 @@ new Vue({
             this.editIndex = null;
         },
         showModalDeleteConfirm(index) {
+            this.scrollPosition = window.scrollY;
             this.deleteIndex = index;
             this.modalDeleteConfirm = true;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         closeModalDeleteConfirm() {
             this.modalDeleteConfirm = false;
             this.deleteIndex = null;
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         confirmDeleteAction() {
             if (this.deleteIndex !== null) {

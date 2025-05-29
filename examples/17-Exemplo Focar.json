@@ -1,0 +1,18 @@
+{
+  "name": "Exemplo Focar",
+  "version": "1.0.0",
+  "testType": "e2e",
+  "test": {
+    "url": "https://front.serverest.dev",
+    "actions": [
+      {
+        "type": "focus",
+        "selector": "#email",
+        "text": "",
+        "selector2": "",
+        "disabled": false
+      }
+    ]
+  },
+  "apiTests": []
+}

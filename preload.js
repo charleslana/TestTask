@@ -18,5 +18,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
             const data = await ipcRenderer.invoke('load-example', exampleName);
             callback(data);
         });
+    },
+
+    onThemeChange: (callback) => {
+        ipcRenderer.on('set-theme', (_event, theme) => {
+            callback(theme);
+        });
     }
 });

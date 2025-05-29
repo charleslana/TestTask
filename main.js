@@ -7,6 +7,7 @@ const { Base } = require('./base');
 const packageJson = require('./package.json');
 const os = require('os');
 const { ApiBase } = require('./api-base');
+const { autoUpdater } = require('electron-updater');
 
 let busyWindow;
 let electronProcess;
@@ -24,9 +25,15 @@ function createWindow() {
     });
     attachLoadErrorHandler(mainWindow);
     mainWindow.loadFile('workspaces.html');
-    mainWindow.webContents.on('did-finish-load', () => {
+
+    mainWindow.on('close', (event) => {
+        mainWindow.webContents.executeJavaScript('localStorage.removeItem("selectedWorkspaceIndex");');
+    });
+
+    mainWindow.webContents.on('did-finish-load', async () => {
         const currentURL = mainWindow.webContents.getURL();
         const isWorkspacePage = currentURL.endsWith('workspaces.html');
+        const currentTheme = await mainWindow.webContents.executeJavaScript('localStorage.getItem("theme")') || 'default';
 
         const template = [
             {
@@ -167,6 +174,16 @@ function createWindow() {
                                 label: 'Importar Exemplo Clicar Iframe',
                                 enabled: isWorkspacePage,
                                 click: () => mainWindow.webContents.send('import-example', '15-Exemplo Clicar Iframe')
+                            },
+                            {
+                                label: 'Importar Exemplo Navegar para trás e frente',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '16-Exemplo Navegar para trás e frente')
+                            },
+                            {
+                                label: 'Importar Exemplo Focar',
+                                enabled: isWorkspacePage,
+                                click: () => mainWindow.webContents.send('import-example', '17-Exemplo Focar')
                             }
                         ]
                     },
@@ -177,6 +194,40 @@ function createWindow() {
                                 label: 'Importar Exemplo testes de api',
                                 enabled: isWorkspacePage,
                                 click: () => mainWindow.webContents.send('import-example', '1000-testes de api')
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                label: 'Configurações',
+                submenu: [
+                    {
+                        label: 'Temas',
+                        submenu: [
+                            {
+                                label: 'Do Sistema',
+                                type: 'radio',
+                                checked: currentTheme === 'default',
+                                click: () => {
+                                    mainWindow.webContents.send('set-theme', 'default');
+                                }
+                            },
+                            {
+                                label: 'Claro',
+                                type: 'radio',
+                                checked: currentTheme === 'light',
+                                click: () => {
+                                    mainWindow.webContents.send('set-theme', 'light');
+                                }
+                            },
+                            {
+                                label: 'Escuro',
+                                type: 'radio',
+                                checked: currentTheme === 'dark',
+                                click: () => {
+                                    mainWindow.webContents.send('set-theme', 'dark');
+                                }
                             }
                         ]
                     }
@@ -206,6 +257,30 @@ function createWindow() {
         ];
         const menu = Menu.buildFromTemplate(template);
         Menu.setApplicationMenu(menu);
+    });
+
+    autoUpdater.checkForUpdatesAndNotify();
+
+    autoUpdater.on('update-available', () => {
+        dialog.showMessageBox(mainWindow, {
+            type: 'info',
+            buttons: ['OK'],
+            title: 'Atualização disponível',
+            message: 'Uma nova atualização está disponível e será baixada agora.'
+        });
+    });
+
+    autoUpdater.on('update-downloaded', () => {
+        dialog.showMessageBox(mainWindow, {
+            type: 'question',
+            buttons: ['Instalar', 'Mais tarde'],
+            title: 'Atualização pronta',
+            message: 'Uma nova atualização foi baixada. Deseja instalá-la agora?'
+        }).then((result) => {
+            if (result.response === 0) {
+                autoUpdater.quitAndInstall();
+            }
+        });
     });
 }
 
@@ -411,6 +486,18 @@ async function runTestOnce(test, config, base, event, lastTest) {
             case 'iframeClick':
                 result = await base.iframeClick(action.selector2, action.selector);
                 result.actionType = 'iframeClick';
+                break;
+            case 'navigateBack':
+                result = await base.navigateBack();
+                result.actionType = 'navigateBack';
+                break;
+            case 'navigateForward':
+                result = await base.navigateForward();
+                result.actionType = 'navigateForward';
+                break;
+            case 'focus':
+                result = await base.focus(action.selector);
+                result.actionType = 'focus';
                 break;
             default:
                 throw new Error('Nenhuma ação foi encontrada');
