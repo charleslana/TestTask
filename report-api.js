@@ -106,7 +106,6 @@ new Vue({
             XLSX.writeFile(workbook, filename);
             this.showSuccessNotification = true;
         },
-
         exportXLS() {
             this.showSuccessNotification = false;
             const rows = this.prepareCSVData();
@@ -123,12 +122,13 @@ new Vue({
         },
         prepareCSVData() {
             const data = [];
-            data.push(["Descrição", "Status", "Tempo"]);
+            data.push(["Descrição", "Status", "Tempo", "Data"]);
             this.lastTest.tests.forEach(result => {
                 data.push([
                     result.description,
                     result.fail ? `${result.fail}` : 'Passou',
-                    this.formatExecutionTime(result.duration)
+                    this.formatExecutionTime(result.duration),
+                    new Date(this.lastTest.date).toLocaleString('pt-BR')
                 ]);
             });
             return data;

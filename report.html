@@ -47,6 +47,8 @@
 
             <!-- Timeline começa aqui -->
             <div class="timeline my-5" v-if="lastTest.tests && lastTest.tests.length">
+                <p class="has-text-grey mb-4">Data do teste: {{ new Date(lastTest.date).toLocaleString('pt-BR') }}</p>
+
                 <header class="timeline-header">
                     <span class="tag is-medium is-link is-light">Início</span>
                 </header>
@@ -161,7 +163,12 @@
         <!-- Conteúdo oculto para gerar o PDF -->
         <div id="report-pdf" ref="pdfContent" style="display: none;" class="content">
             <h1 class="title is-4 has-text-dark">TestTask</h1>
-            <div class="has-text-grey">Relatório gerado em {{ new Date().toLocaleString('pt-BR') }}</div>
+            <div class="has-text-grey mb-4">
+                Data do teste: {{ new Date(lastTest.date).toLocaleString('pt-BR') }}
+            </div>
+            <div class="has-text-grey">
+                Relatório gerado em {{ new Date().toLocaleString('pt-BR') }}
+            </div>
             <!-- Resumo de status dos testes -->
             <div style="margin: 1rem 0;" v-if="lastTest.tests">
                 <p :class="{

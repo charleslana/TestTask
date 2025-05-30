@@ -587,6 +587,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
         tests: [],
         totalTime: 0,
         lastScreenshot: null,
+        date: null,
     };
     let isClose = true;
     let isLastScreenshot = false;
@@ -658,6 +659,7 @@ ipcMain.on('start-puppeteer', async (event, { test, config }) => {
             return sum + (current.executionTime || 0);
         }, 0);
         lastTest.totalTime = executionTime;
+        lastTest.date = new Date().toISOString();
         console.log(`O teste levou ${executionTime} ms para executar.`);
         event.sender.send('test-completed', lastTest);
         event.sender.send('enable-start-button');
@@ -692,6 +694,7 @@ ipcMain.on('start-api-tests', async (event, payload) => {
         tests: [],
         totalTime: 0,
         lastScreenshot: null,
+        date: null,
     };
 
     let isClose = true;
@@ -757,6 +760,7 @@ ipcMain.on('start-api-tests', async (event, payload) => {
             return sum + (current.duration || 0);
         }, 0);
         lastTest.totalTime = executionTime;
+        lastTest.date = new Date().toISOString();
 
         console.log(`O teste levou ${executionTime} ms para executar.`);
 
