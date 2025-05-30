@@ -53,9 +53,15 @@
                 <div class="level">
                     <div class="level-left">
                         <div>
-                            <strong>Nome:</strong>
-                            <span>{{ workspace.name }}</span>
-                            <a href="#" class="ml-2" @click.prevent="openEditModal(index)">✏️ Editar nome</a><br />
+                            <div class="is-flex is-align-items-center">
+                                <strong>Nome: {{ workspace.name }}</strong>
+                                <a href="#" class="ml-2" @click.prevent="openEditModal(index)">
+                                    <span class="is-flex is-align-items-center">
+                                        <i class="material-icons ml-2">edit</i>
+                                        Editar nome
+                                    </span>
+                                </a>
+                            </div>
                             <div v-if="workspace.testType === 'e2e'">
                                 <strong>Quantidade de ações:</strong> <span>{{ workspace.test.actions.length
                                     }}</span><br />
