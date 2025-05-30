@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Relatório</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="bulma.min.css">
     <link rel="stylesheet" href="bulma-timeline.min.css">
     <link rel="stylesheet" href="modal-fx.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
         .image-zoom {
             max-width: 90%;
@@ -34,9 +34,16 @@
 
                 <!-- Right side -->
                 <div class="level-right">
-                    <p class="level-item"><a class="button is-success" @click="showExportModal = true">Exportar</a></p>
+                    <p class="level-item">
+                        <button class="button is-success" @click="showExportModal = true"
+                            :disabled="!lastTest || !lastTest.tests || lastTest.tests.length === 0">Exportar</button>
+                    </p>
                 </div>
             </nav>
+
+            <div v-if="!lastTest || !lastTest.tests || lastTest.tests.length === 0" class="notification my-5">
+                Nenhum relatório encontrado.
+            </div>
 
             <!-- Timeline começa aqui -->
             <div class="timeline my-5" v-if="lastTest.tests && lastTest.tests.length">
@@ -156,7 +163,7 @@
             <h1 class="title is-4 has-text-dark">TestTask</h1>
             <div class="has-text-grey">Relatório gerado em {{ new Date().toLocaleString('pt-BR') }}</div>
             <!-- Resumo de status dos testes -->
-            <div style="margin: 1rem 0;">
+            <div style="margin: 1rem 0;" v-if="lastTest.tests">
                 <p :class="{
                     'has-text-success': testsPassed === lastTest.tests.length,
                     'has-text-danger': testsPassed !== lastTest.tests.length
@@ -198,9 +205,9 @@
         </div>
     </div>
     <script src="vue@2.js"></script>
-    <script src="report-api.js"></script>
     <script src="html2pdf.bundle.min.js"></script>
     <script src="xlsx.full.min.js"></script>
+    <script src="report-api.js"></script>
 </body>
 
 </html>

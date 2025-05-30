@@ -24,5 +24,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
         ipcRenderer.on('set-theme', (_event, theme) => {
             callback(theme);
         });
+    },
+
+    focusFix: () => ipcRenderer.send('focus-fix')
+});
+
+contextBridge.executeInMainWorld({
+    func: () => {
+        const originalAlert = window.alert;
+        const originalConfirm = window.confirm;
+
+        window.alert = function (message) {
+            const result = originalAlert(message);
+            window.electronAPI?.focusFix();
+            return result;
+        };
+
+        window.confirm = function (message) {
+            const result = originalConfirm(message);
+            window.electronAPI?.focusFix();
+            return result;
+        };
     }
 });

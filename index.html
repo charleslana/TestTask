@@ -71,7 +71,7 @@
                     <div class="box mt-5" v-if="workspace.test.actions.length">
                         <p class="title is-5">Ações configuradas</p>
                         <draggable v-model="workspace.test.actions" :options="{ animation: 150 }">
-                            <div v-for="(action, index) in workspace.test.actions" :key="index" :ref="'action_' + index"
+                            <div v-for="(action, index) in workspace.test.actions" :key="index" ref="actions"
                                 :class="['card', 'mb-4', { 'disabled-card': action.disabled }]" style="cursor: move;">
                                 <header class="card-header">
                                     <p class="card-header-title">
@@ -139,6 +139,15 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- Botões fixos para rolar a tela -->
+        <div style="position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <button class="button is-info is-rounded" @click="scrollToTop">
+                <span class="icon"><i class="material-icons">keyboard_arrow_up</i></span>
+            </button>
+            <button class="button is-info is-rounded" @click="scrollToBottom">
+                <span class="icon"><i class="material-icons">keyboard_arrow_down</i></span>
+            </button>
         </div>
         <!-- Modal actions -->
         <div class="modal" :class="{ 'is-active': modalAction }">
@@ -264,7 +273,7 @@
 
                     <div v-if="urls.length">
                         <div class="box is-clickable mb-2" v-for="(url, index) in urls" :key="index"
-                            @click="selectUrl(url)">
+                            :ref="url === lastAddedUrl ? 'newUrlItem' : null" @click="selectUrl(url)">
                             <div class="is-flex is-justify-content-space-between is-align-items-center">
                                 <span>{{ url }}</span>
                                 <div>

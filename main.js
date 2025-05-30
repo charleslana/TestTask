@@ -10,10 +10,11 @@ const { ApiBase } = require('./api-base');
 const { autoUpdater } = require('electron-updater');
 
 let busyWindow;
+let mainWindow;
 let electronProcess;
 
 function createWindow() {
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 1280,
         height: 720,
         icon: path.join(__dirname, 'public/icon.png'),
@@ -846,6 +847,15 @@ ipcMain.handle('import-workspace', async () => {
     }
     return null;
 });
+
+ipcMain.on('focus-fix', (event) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    if (senderWindow) {
+        senderWindow.blur();
+        senderWindow.focus();
+    }
+});
+
 
 app.whenReady().then(() => {
     globalShortcut.register('F12', () => {

@@ -53,7 +53,8 @@ new Vue({
         modalCopyWorkspace: false,
         selectedWorkspace: null,
         availableWorkspaces: [],
-        selectedActionIndex: null
+        selectedActionIndex: null,
+        lastAddedUrl: null,
     },
     mounted() {
         const theme = localStorage.getItem('theme') || 'dark';
@@ -253,25 +254,28 @@ new Vue({
                 this.editIndex = null;
             } else {
                 this.workspace.test.actions.push(actionToSave);
+
+                this.$nextTick(() => {
+                    const actionItems = this.$refs.actions;
+                    if (Array.isArray(actionItems) && actionItems.length > 0) {
+                        const lastItem = actionItems[actionItems.length - 1];
+                        lastItem?.scrollIntoView({ block: 'center' });
+                    }
+                });
             }
 
             this.closeModalConfig();
             this.closeModalAction();
-
-            this.$nextTick(() => {
-                const lastIndex = this.workspace.test.actions.length - 1;
-                const lastActionRef = this.$refs[`action_${lastIndex}`];
-
-                if (lastActionRef) {
-                    lastActionRef.scrollIntoView();
-                }
-            });
         },
         closeModalConfig() {
             this.modalConfigAction = false;
             this.actionForm = { selector: '', text: '', selector2: '' };
             this.actionCurrent = null;
             this.editIndex = null;
+            if (!this.modalAction) {
+                document.body.classList.remove('modal-open');
+                window.scrollTo(0, this.scrollPosition);
+            }
         },
         showModalDeleteConfirm(index) {
             this.scrollPosition = window.scrollY;
@@ -322,10 +326,14 @@ new Vue({
             window.electron.ipcRenderer.send('report');
         },
         openUrlModal() {
+            this.scrollPosition = window.scrollY;
             this.loadUrls();
             this.modalUrlList = true;
             this.newUrl = '';
             this.editUrlIndex = null;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
+
             this.$nextTick(() => {
                 const modalBody = this.$refs.modalBody;
                 if (modalBody) {
@@ -335,6 +343,8 @@ new Vue({
         },
         closeUrlModal() {
             this.modalUrlList = false;
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         loadUrls() {
             const saved = localStorage.getItem('savedUrls');
@@ -345,6 +355,7 @@ new Vue({
         },
         addUrl() {
             const url = this.newUrl.trim();
+            this.lastAddedUrl = url;
             if (!url) return;
             if (this.editUrlIndex !== null) {
                 this.urls.splice(this.editUrlIndex, 1, url);
@@ -354,6 +365,16 @@ new Vue({
             this.saveUrls();
             this.newUrl = '';
             this.editUrlIndex = null;
+
+            this.$nextTick(() => {
+                const item = this.$refs.newUrlItem;
+                if (Array.isArray(item)) {
+                    item[0]?.scrollIntoView({ block: 'center' });
+                } else if (item?.scrollIntoView) {
+                    item.scrollIntoView({ block: 'center' });
+                }
+                this.lastAddedUrl = null;
+            });
         },
         editUrl(index) {
             this.newUrl = this.urls[index];
@@ -384,8 +405,17 @@ new Vue({
                 disabled: false,
             };
             this.workspace.test.actions.splice(index + 1, 0, newAction);
+
+            this.$nextTick(() => {
+                const refs = this.$refs.actions;
+                if (Array.isArray(refs)) {
+                    const duplicatedItem = refs[index + 1];
+                    duplicatedItem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
         },
         copyToAnotherWorkspace(actionIndex) {
+            this.scrollPosition = window.scrollY;
             const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
             const selectedWorkspaceIndex = parseInt(localStorage.getItem('selectedWorkspaceIndex'));
             this.availableWorkspaces = workspaces.reduce((acc, ws, wsIndex) => {
@@ -397,9 +427,13 @@ new Vue({
             this.selectedWorkspace = null;
             this.selectedActionIndex = actionIndex;
             this.modalCopyWorkspace = true;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         closeCopyModal() {
             this.modalCopyWorkspace = false;
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         copyActionToWorkspace() {
             const actionToCopy = this.workspace.test.actions[this.selectedActionIndex];
@@ -412,7 +446,13 @@ new Vue({
             }
             alert('Ação copiada com sucesso!');
             this.closeCopyModal();
-        }
+        },
+        scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        scrollToBottom() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        },
     },
     beforeDestroy() {
         window.electron.ipcRenderer.removeAllListeners('enable-start-button');

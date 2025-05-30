@@ -11,12 +11,14 @@
 
 <body>
     <div id="workspace-app" class="container mt-6">
-        <h1 class="title has-text-centered">Workspaces (Total: {{ totalWorkspaces }})</h1>
+        <h1 class="title has-text-centered">Workspaces</h1>
 
         <div class="buttons is-centered my-4">
             <button class="button is-primary" @click="openCreateModal">Criar Workspace</button>
             <button class="button is-link" @click="importWorkspace">Importar Workspace</button>
         </div>
+
+        <div class="is-size-5">Total: {{ totalWorkspaces }}</div>
 
         <div class="field mb-4">
             <label class="label">Pesquisar</label>
@@ -39,38 +41,48 @@
             </div>
         </div>
 
-        <div class="box" v-for="(workspace, index) in filteredWorkspaces" :key="index" :ref="'workspace_' + index">
-            <div class="level">
-                <div class="level-left">
-                    <div>
-                        <strong>Nome:</strong>
-                        <span>{{ workspace.name }}</span>
-                        <a href="#" class="ml-2" @click.prevent="openEditModal(index)">✏️ Editar nome</a><br />
-                        <div v-if="workspace.testType === 'e2e'">
-                            <strong>Quantidade de ações:</strong> <span>{{ workspace.test.actions.length }}</span><br />
-                        </div>
-                        <div v-if="workspace.testType === 'api'">
-                            <strong>Quantidade de apis:</strong> <span>{{ workspace.apiTests.length }}</span><br />
-                        </div>
-                        <strong>Versão:</strong> {{ workspace.version }}<br />
-                        <div class="is-flex is-align-items-center">
-                            <strong class="mr-2">Tipo:</strong>
-                            <span class="is-flex is-align-items-center"
-                                v-html="getTestTypeHtml(workspace.testType)"></span>
-                        </div>
+        <div class="field is-grouped mb-4" v-if="workspaces.length > 0 && (searchTerm != '' || testTypeFilter != '')">
+            <p class="control">
+                <button class="button is-light" @click="clearFilters">Limpar Filtros</button>
+            </p>
+        </div>
 
+        <draggable v-model="workspaces" :options="{ animation: 150 }" class="my-5" @end="onDragEnd">
+            <div class="box" v-for="(workspace, index) in filteredWorkspaces" :key="index" :ref="'workspace_' + index"
+                style="cursor: move;">
+                <div class="level">
+                    <div class="level-left">
+                        <div>
+                            <strong>Nome:</strong>
+                            <span>{{ workspace.name }}</span>
+                            <a href="#" class="ml-2" @click.prevent="openEditModal(index)">✏️ Editar nome</a><br />
+                            <div v-if="workspace.testType === 'e2e'">
+                                <strong>Quantidade de ações:</strong> <span>{{ workspace.test.actions.length
+                                    }}</span><br />
+                            </div>
+                            <div v-if="workspace.testType === 'api'">
+                                <strong>Quantidade de apis:</strong> <span>{{ workspace.apiTests.length }}</span><br />
+                            </div>
+                            <strong>Versão:</strong> {{ workspace.version }}<br />
+                            <div class="is-flex is-align-items-center">
+                                <strong class="mr-2">Tipo:</strong>
+                                <span class="is-flex is-align-items-center"
+                                    v-html="getTestTypeHtml(workspace.testType)"></span>
+                            </div>
+
+                        </div>
                     </div>
-                </div>
-                <div class="level-right">
-                    <div class="buttons">
-                        <button class="button is-success" @click="openWorkspace(index)">Abrir</button>
-                        <button class="button is-warning" @click="exportWorkspace(index)">Exportar</button>
-                        <button class="button is-info" @click="duplicateWorkspace(index)">Duplicar</button>
-                        <button class="button is-danger" @click="deleteWorkspace(index)">Excluir</button>
+                    <div class="level-right">
+                        <div class="buttons">
+                            <button class="button is-success" @click="openWorkspace(index)">Abrir</button>
+                            <button class="button is-warning" @click="exportWorkspace(index)">Exportar</button>
+                            <button class="button is-info" @click="duplicateWorkspace(index)">Duplicar</button>
+                            <button class="button is-danger" @click="deleteWorkspace(index)">Excluir</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </draggable>
 
         <div v-if="filteredWorkspaces.length === 0" class="notification">
             Nenhum workspace encontrado.
@@ -97,7 +109,6 @@
                         <div class="control">
                             <div class="select is-fullwidth">
                                 <select v-model="newWorkspaceTestType" required>
-                                    <option value="">Todos</option>
                                     <option value="e2e">Testes E2E</option>
                                     <option value="api">Testes API</option>
                                 </select>
@@ -157,6 +168,10 @@
     </div>
 
     <script src="vue@2.js"></script>
+    <!-- Sortable.js -->
+    <script src="Sortable.min.js"></script>
+    <!-- Vue.Draggable -->
+    <script src="vuedraggable.umd.min.js"></script>
     <script>
         new Vue({
             el: '#workspace-app',
@@ -198,6 +213,9 @@
                 }
             },
             methods: {
+                onDragEnd() {
+                    this.saveWorkspaces();
+                },
                 async confirmCreateWorkspace() {
                     if (this.canCreateWorkspace) {
                         this.workspaces.push({
@@ -327,6 +345,10 @@
                         </span>
                     `;
                     }
+                },
+                clearFilters() {
+                    this.searchTerm = '';
+                    this.testTypeFilter = '';
                 }
             },
             mounted() {

@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Configuração</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="bulma.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -16,7 +16,7 @@
             <div class="field">
                 <label class="label" for="custom1">Limite de tempo para requisição em ms:</label>
                 <div class="control">
-                    <input class="input" id="custom1" placeholder="ex: 10000" type="number"
+                    <input class="input is-shadowless" id="custom1" placeholder="ex: 10000" type="number"
                         v-model.trim="defaultTimeout" />
                 </div>
             </div>
@@ -65,7 +65,8 @@
             <div class="field">
                 <label class="label" for="custom1">Quantidade de repetição:</label>
                 <div class="control">
-                    <input class="input" id="custom1" placeholder="ex: 1" type="number" v-model="iteration" />
+                    <input class="input is-shadowless" id="custom1" placeholder="ex: 1" type="number"
+                        v-model="iteration" />
                 </div>
             </div>
 

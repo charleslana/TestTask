@@ -16,7 +16,8 @@
     background: #777;
 }
 
-.input:focus {
+.input:focus,
+.select select:focus {
     border-color: rgba(255, 255, 255, 0.5);
 }
 
