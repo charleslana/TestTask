@@ -31,8 +31,8 @@
 
             <div class="field">
                 <label class="label" for="custom3">Selecione tipo de espera da navegação:</label>
-                <div class="select is-fullwidth is-shadowless">
-                    <select v-model="navigateWaitUntil" id="custom3">
+                <div class="select is-fullwidth">
+                    <select v-model="navigateWaitUntil" id="custom3" class="is-shadowless">
                         <option value="domcontentloaded">Aguarda até que os elementos do DOM estejam carregados</option>
                         <option value="load">Aguarda até que todos os dados da pagina carregue</option>
                         <option value="networkidle0">Aguarda até que não haja mais de 0 conexões de rede por pelo menos

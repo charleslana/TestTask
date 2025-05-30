@@ -52,7 +52,7 @@
                     <div class="box mt-5" v-if="apiTests.length">
                         <h2 class="title is-5">Testes de API Adicionados</h2>
                         <draggable v-model="apiTests" :options="{ animation: 150 }">
-                            <div v-for="(test, index) in apiTests" :key="index"
+                            <div v-for="(test, index) in apiTests" :key="index" ref="tests"
                                 :class="['card', 'mb-2', { 'disabled-card': test.disabled }]" style="cursor: move;">
                                 <header class="card-header">
                                     <p class="card-header-title">{{ test.url }}</p>
@@ -155,7 +155,8 @@
                     <div class="field">
                         <label class="label">URL (obrigatório)</label>
                         <div class="control">
-                            <input class="input" type="text" v-model.trim="apiTest.url" placeholder="Insira a URL" />
+                            <input class="input is-shadowless" type="text" v-model.trim="apiTest.url"
+                                placeholder="Insira a URL" />
                         </div>
                         <p class="help is-danger" v-if="!apiTest.url">A URL é obrigatória.</p>
                     </div>
@@ -164,7 +165,7 @@
                         <label class="label">Método (obrigatório)</label>
                         <div class="control">
                             <div class="select">
-                                <select v-model="apiTest.method">
+                                <select v-model="apiTest.method" class="is-shadowless">
                                     <option value="GET">GET</option>
                                     <option value="POST">POST</option>
                                     <option value="PUT">PUT</option>
@@ -185,12 +186,12 @@
                             refInFor>
                             <div class="field is-grouped is-align-items-center">
                                 <div class="control is-expanded">
-                                    <input class="input" type="text" v-model="header.key" placeholder="Chave"
-                                        :disabled="header.disabled" />
+                                    <input class="input is-shadowless" type="text" v-model="header.key"
+                                        placeholder="Chave" :disabled="header.disabled" />
                                 </div>
                                 <div class="control is-expanded">
-                                    <input class="input" type="text" v-model="header.value" placeholder="Valor"
-                                        :disabled="header.disabled" />
+                                    <input class="input is-shadowless" type="text" v-model="header.value"
+                                        placeholder="Valor" :disabled="header.disabled" />
                                 </div>
                                 <div class="control">
                                     <button class="button is-danger" @click="removeHeaderField(index)">Excluir</button>
@@ -228,12 +229,12 @@
                             refInFor>
                             <div class="field is-grouped is-align-items-center">
                                 <div class="control is-expanded">
-                                    <input class="input" type="text" v-model="bodyField.key" placeholder="Chave"
-                                        :disabled="bodyField.disabled" />
+                                    <input class="input is-shadowless" type="text" v-model="bodyField.key"
+                                        placeholder="Chave" :disabled="bodyField.disabled" />
                                 </div>
                                 <div class="control is-expanded">
-                                    <input class="input" type="text" v-model="bodyField.value" placeholder="Valor"
-                                        :disabled="bodyField.disabled" />
+                                    <input class="input is-shadowless" type="text" v-model="bodyField.value"
+                                        placeholder="Valor" :disabled="bodyField.disabled" />
                                 </div>
                                 <div class="control">
                                     <button class="button is-danger" @click="removeBodyField(index)">Excluir</button>
@@ -263,7 +264,7 @@
                         <label class="label">Content-Type</label>
                         <div class="control">
                             <div class="select">
-                                <select v-model="apiTest.contentType">
+                                <select v-model="apiTest.contentType" class="is-shadowless">
                                     <option value="application/json">application/json</option>
                                     <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded
                                     </option>
@@ -276,7 +277,7 @@
                     <div class="field">
                         <label class="label">Status Code esperado (obrigatório)</label>
                         <div class="control">
-                            <input class="input" type="number" v-model="apiTest.expectStatusCode"
+                            <input class="input is-shadowless" type="number" v-model="apiTest.expectStatusCode"
                                 placeholder="Digite o Status Code" />
                         </div>
                         <p class="help is-danger" v-if="!apiTest.expectStatusCode">O Status Code é obrigatório.</p>
@@ -293,12 +294,12 @@
                         <div v-for="(property, index) in tempProperties" :key="index" class="field has-addons mt-4"
                             ref="propertyField" refInFor>
                             <div class="control">
-                                <input class="input" type="text" v-model="property.key" placeholder="Chave"
-                                    :disabled="property.disabled" />
+                                <input class="input is-shadowless" type="text" v-model="property.key"
+                                    placeholder="Chave" :disabled="property.disabled" />
                             </div>
                             <div class="control">
-                                <input class="input" type="text" v-model="property.value" placeholder="Valor"
-                                    :disabled="property.disabled" />
+                                <input class="input is-shadowless" type="text" v-model="property.value"
+                                    placeholder="Valor" :disabled="property.disabled" />
                             </div>
                             <div class="control">
                                 <button class="button is-danger" @click="removePropertyField(index)">Excluir</button>
@@ -329,11 +330,11 @@
                         <div v-for="(extract, index) in tempExtractList" :key="'extract-' + index"
                             class="field has-addons mt-4" ref="aliasField" refInFor>
                             <div class="control">
-                                <input class="input" type="text" v-model="extract.key"
+                                <input class="input is-shadowless" type="text" v-model="extract.key"
                                     placeholder="Caminho da resposta (ex: data.token)" />
                             </div>
                             <div class="control">
-                                <input class="input" type="text" v-model="extract.alias"
+                                <input class="input is-shadowless" type="text" v-model="extract.alias"
                                     placeholder="Nome interno (ex: tokenUsuario)" />
                             </div>
                             <div class="control">
@@ -412,7 +413,7 @@
                         <label class="label">Selecionar Workspace</label>
                         <div class="control">
                             <div class="select is-fullwidth">
-                                <select v-model="selectedWorkspace">
+                                <select v-model="selectedWorkspace" class="is-shadowless">
                                     <option v-for="(ws, idx) in availableWorkspaces" :key="idx" :value="ws.index">
                                         {{ ws.workspace.name }}
                                     </option>

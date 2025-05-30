@@ -47,6 +47,7 @@ new Vue({
             target.classList.toggle('is-active');
         },
         openApiTestModal() {
+            this.scrollPosition = window.scrollY;
             this.apiTest = {
                 url: '',
                 method: 'GET',
@@ -62,6 +63,8 @@ new Vue({
             this.editIndex = null;
             this.apiTestModal = true;
             this.resetScrollModal();
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         resetScrollModal() {
             this.$nextTick(() => {
@@ -74,6 +77,8 @@ new Vue({
         closeApiTestModal() {
             this.apiTestModal = false;
             this.clearTempFields();
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         saveApiTest() {
             this.apiTest.bodyFields = this.tempBodyFields;
@@ -86,6 +91,14 @@ new Vue({
                 this.editIndex = null;
             } else {
                 this.apiTests.push({ ...this.apiTest });
+
+                this.$nextTick(() => {
+                    const testItems = this.$refs.tests;
+                    if (Array.isArray(testItems) && testItems.length > 0) {
+                        const lastItem = testItems[testItems.length - 1];
+                        lastItem?.scrollIntoView({ block: 'center' });
+                    }
+                });
             }
             this.closeApiTestModal();
             this.saveApiTests();
@@ -160,6 +173,7 @@ new Vue({
             this.tempHeaders[index].disabled = !this.tempHeaders[index].disabled;
         },
         editTest(index) {
+            this.scrollPosition = window.scrollY;
             const test = this.apiTests[index];
             this.apiTest = { ...test };
 
@@ -171,11 +185,21 @@ new Vue({
             this.editIndex = index;
             this.apiTestModal = true;
             this.resetScrollModal();
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         duplicateTest(index) {
             const testToDuplicate = { ...this.apiTests[index] };
             this.apiTests.splice(index + 1, 0, testToDuplicate);
             this.saveApiTests();
+
+            this.$nextTick(() => {
+                const refs = this.$refs.tests;
+                if (Array.isArray(refs)) {
+                    const duplicatedItem = refs[index + 1];
+                    duplicatedItem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
         },
         saveApiTests() {
             const selectedIndex = localStorage.getItem('selectedWorkspaceIndex');
@@ -214,12 +238,17 @@ new Vue({
             window.electron.ipcRenderer.send('start-api-tests', { apiRequests: this.apiTests, config: this.getConfig() });
         },
         openModalDeleteConfirm(index) {
+            this.scrollPosition = window.scrollY;
             this.deleteIndex = index;
             this.modalDeleteConfirm = true;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         closeModalDeleteConfirm() {
             this.modalDeleteConfirm = false;
             this.deleteIndex = null;
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         confirmDeleteAction() {
             if (this.deleteIndex !== null) {
@@ -280,6 +309,7 @@ new Vue({
             this.tempExtractList.splice(index, 1);
         },
         copyToAnotherWorkspace(apiIndex) {
+            this.scrollPosition = window.scrollY;
             const workspaces = JSON.parse(localStorage.getItem('workspaces') || '[]');
             const selectedWorkspaceIndex = parseInt(localStorage.getItem('selectedWorkspaceIndex'));
             this.availableWorkspaces = workspaces.reduce((acc, ws, wsIndex) => {
@@ -291,9 +321,13 @@ new Vue({
             this.selectedWorkspace = null;
             this.selectedApiIndex = apiIndex;
             this.modalCopyWorkspace = true;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         closeCopyModal() {
             this.modalCopyWorkspace = false;
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         copyActionToWorkspace() {
             const apiToCopy = this.apiTests[this.selectedApiIndex];
