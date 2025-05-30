@@ -126,7 +126,7 @@ new Vue({
             this.lastTest.tests.forEach(result => {
                 data.push([
                     result.description,
-                    result.fail ? `${result.fail}` : 'Passou',
+                    result.error ? `${result.error}` : 'Passou',
                     this.formatExecutionTime(result.duration),
                     new Date(this.lastTest.date).toLocaleString('pt-BR')
                 ]);

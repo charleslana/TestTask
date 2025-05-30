@@ -56,7 +56,9 @@
                 <div v-for="(result, index) in lastTest.tests" :key="index">
                     <div class="timeline-item">
                         <div class="timeline-marker is-link is-icon">
-                            <span class="icon">{{ result.fail ? '❌' : '✅' }}</span>
+                            <span class="icon">
+                                <i class="material-icons">{{ result.fail ? 'close' : 'check' }}</i>
+                            </span>
                         </div>
                         <div class="timeline-content">
                             <p class="heading" :class="{
@@ -65,7 +67,7 @@
                 }">
                                 {{ result.description }}
                                 <span>
-                                    {{ result.fail ? '❌' : '✅' }}
+                                    <i class="material-icons">{{ result.fail ? 'close' : 'check' }}</i>
                                 </span>
                             </p>
                             <p v-html="formatBreakLines(result.fail ? ((result.success || '') + '\n' + result.fail) : (result.success || ''))"
@@ -96,7 +98,9 @@
                 <!-- Última screenshot geral -->
                 <div class="timeline-item" v-if="lastTest.lastScreenshot">
                     <div class="timeline-marker is-link is-icon">
-                        <span class="icon">📸</span>
+                        <span class="icon">
+                            <i class="material-icons">photo</i>
+                        </span>
                     </div>
                     <div class="timeline-content">
                         <p class="heading">Última captura de tela</p>
@@ -176,11 +180,13 @@
                     'has-text-danger': testsPassed !== lastTest.tests.length
                     }" style="font-size: 1.2rem;">
                     <template v-if="testsPassed === lastTest.tests.length">
-                        Testes passaram: {{ testsPassed }} de {{ lastTest.tests.length }} ✅
+                        Testes passaram: {{ testsPassed }} de {{ lastTest.tests.length }}
+                        <i class="material-icons" style="vertical-align: middle;">check</i>
                     </template>
                     <template v-else>
                         Testes: {{ testsPassed }} de {{ lastTest.tests.length }} (falharam {{ lastTest.tests.length -
-                        testsPassed }}) ❌
+                        testsPassed }})
+                        <i class="material-icons" style="vertical-align: middle;">close</i>
                     </template>
                 </p>
             </div>
@@ -199,8 +205,15 @@
                     <tr v-for="(result, index) in lastTest.tests" :key="'pdf-'+index">
                         <td>{{ translateActionType(result.actionType) }}</td>
                         <td>{{ result.description }}</td>
-                        <td :style="{ color: result.fail ? 'red' : 'green' }">
-                            {{ result.fail ? '❌ ' + result.fail : '✅ Passou' }}
+                        <td :class="{ color: result.fail ? 'has-text-danger' : 'has-text-success' }">
+                            <span v-if="result.fail">
+                                <i class="material-icons" style="vertical-align: middle;">close</i>
+                                {{ result.fail }}
+                            </span>
+                            <span v-else>
+                                <i class="material-icons" style="vertical-align: middle;">check</i>
+                                Passou
+                            </span>
                         </td>
                         <td>{{ formatExecutionTime(result.executionTime) }}</td>
                     </tr>
