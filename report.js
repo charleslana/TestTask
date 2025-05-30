@@ -29,17 +29,30 @@ new Vue({
             return text.replace(/\n/g, '<br>');
         },
         changeScreenshot(screenshot) {
+            this.scrollPosition = window.scrollY;
             this.selectedScreenshot = screenshot;
             this.showModal = true;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         closeModal() {
             this.showModal = false;
             this.selectedScreenshot = null;
             this.currentZoom = 1;
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
+        },
+        openReportModal() {
+            this.scrollPosition = window.scrollY;
+            this.showExportModal = true;
+            document.body.classList.add('modal-open');
+            document.body.style.top = `-${this.scrollPosition}px`;
         },
         closeExportModal() {
             this.showExportModal = false;
             this.showSuccessNotification = false;
+            document.body.classList.remove('modal-open');
+            window.scrollTo(0, this.scrollPosition);
         },
         exportPDF() {
             this.showSuccessNotification = false;

@@ -342,7 +342,13 @@ new Vue({
             }
             alert('API copiada com sucesso!');
             this.closeCopyModal();
-        }
+        },
+        scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        scrollToBottom() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        },
     },
     mounted() {
         const theme = localStorage.getItem('theme') || 'dark';
