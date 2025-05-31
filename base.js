@@ -26,9 +26,9 @@ export class Base {
         let fail = null;
         let screenshot = null;
         try {
-            const isUrlAccessible = await this.checkUrl(url);
-            if (!isUrlAccessible) {
-                throw new Error(`Falha ao acessar a URL: ${url}`);
+            const result = await this.checkUrl(url);
+            if (!result.ok) {
+                throw new Error(`Falha ao acessar a URL: ${url} - ${result.message}`);
             }
             await this.page.goto(url, { waitUntil: this.navigateWaitUntil, timeout: this.navigateTimeout });
             success = 'Navegação realizada com sucesso!';
@@ -232,10 +232,21 @@ export class Base {
     async checkUrl(url) {
         try {
             const response = await fetch(url);
-            return response.status === 200;
+            const status = response.status;
+            const ok = status >= 200 && status < 300;
+            return {
+                ok,
+                status,
+                message: ok
+                    ? 'URL acessível com sucesso.'
+                    : `A URL retornou status ${status}.`,
+            };
         } catch (err) {
-            console.error(`Erro ao verificar a URL ${url}:`, err);
-            return false;
+            return {
+                ok: false,
+                status: null,
+                message: `Erro ao tentar acessar a URL: ${err.message}`,
+            };
         }
     }
 

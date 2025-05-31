@@ -32,7 +32,7 @@
             <label class="label">Filtro de Tipo</label>
             <div class="control">
                 <div class="select is-fullwidth">
-                    <select v-model="testTypeFilter">
+                    <select v-model="testTypeFilter" class="is-shadowless">
                         <option value="">Todos</option>
                         <option value="e2e">Testes E2E</option>
                         <option value="api">Testes API</option>
@@ -114,7 +114,7 @@
                         <label class="label">Tipo de Teste</label>
                         <div class="control">
                             <div class="select is-fullwidth">
-                                <select v-model="newWorkspaceTestType" required>
+                                <select v-model="newWorkspaceTestType" class="is-shadowless" required>
                                     <option value="e2e">Testes E2E</option>
                                     <option value="api">Testes API</option>
                                 </select>

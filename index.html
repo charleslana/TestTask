@@ -198,7 +198,7 @@
                                 @click="isModalInfo = true">info</i>
                         </label>
                         <div class="control">
-                            <input class="input" type="text" v-model.trim="actionForm.selector2"
+                            <input class="input is-shadowless" type="text" v-model.trim="actionForm.selector2"
                                 placeholder="IFrame seletor" />
                         </div>
                     </div>
@@ -211,7 +211,7 @@
                                 @click="isModalInfo = true">info</i>
                         </label>
                         <div class="control">
-                            <input class="input" type="text" v-model.trim="actionForm.selector"
+                            <input class="input is-shadowless" type="text" v-model.trim="actionForm.selector"
                                 :placeholder="actionPlaceholder" />
                         </div>
                     </div>
@@ -220,7 +220,7 @@
                         v-if="actionCurrent && ['fill', 'type', 'assertText', 'select', 'dragAndDrop', 'iframeType', 'clickWaitForResponse'].includes(actionCurrent.type)">
                         <label class="label">Valor</label>
                         <div class="control">
-                            <input class="input" type="text" v-model.trim="actionForm.text"
+                            <input class="input is-shadowless" type="text" v-model.trim="actionForm.text"
                                 :placeholder="textPlaceholder" />
                         </div>
                     </div>
@@ -266,7 +266,7 @@
                 <section class="modal-card-body" ref="modalBody">
                     <div class="field has-addons mb-4">
                         <div class="control is-expanded">
-                            <input ref="urlInput" class="input" type="text" v-model.trim="newUrl"
+                            <input ref="urlInput" class="input is-shadowless" type="text" v-model.trim="newUrl"
                                 :class="{ 'is-danger': !isNewUrlValid && newUrl.length > 0 }" placeholder="Nova URL" />
                         </div>
                         <div class="control">
@@ -326,7 +326,7 @@
                         <label class="label">Selecionar Workspace</label>
                         <div class="control">
                             <div class="select is-fullwidth">
-                                <select v-model="selectedWorkspace">
+                                <select v-model="selectedWorkspace" class="is-shadowless">
                                     <option v-for="(ws, idx) in availableWorkspaces" :key="idx" :value="ws.index">
                                         {{ ws.workspace.name }}
                                     </option>
