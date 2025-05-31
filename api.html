@@ -168,7 +168,7 @@
                             <input class="input is-shadowless" type="text" v-model.trim="apiTest.url"
                                 placeholder="Insira a URL" />
                         </div>
-                        <p class="help is-danger" v-if="!apiTest.url">A URL é obrigatória.</p>
+                        <p class="help is-danger" v-if="!isValidUrl(apiTest.url)">A URL é obrigatória.</p>
                     </div>
 
                     <div class="field">

@@ -58,6 +58,9 @@
                                         <input class="input is-medium is-shadowless" type="text"
                                             placeholder="Exemplo: https://exemplo.com"
                                             v-model.trim="workspace.test.url" />
+                                    <p v-if="!isUrlValid && workspace.test.url" class="help is-danger">
+                                        URL inválida. Use http(s)://...
+                                    </p>
                                     </p>
                                 </div>
                             </div>
@@ -115,7 +118,7 @@
                 </div>
                 <div class="column has-text-centered">
                     <button class="button is-primary is-large mb-5" @click="startTest"
-                        :disabled="isDisabled || !workspace.test.url">Iniciar o teste</button>
+                        :disabled="isDisabled || !workspace.test.url || isInvalidUrl">Iniciar o teste</button>
                     <span v-if="isDisabled">
                         <p>Problemas no teste?</p><a href="index.html" class="link">Recarregar</a>
                     </span>
@@ -264,10 +267,10 @@
                     <div class="field has-addons mb-4">
                         <div class="control is-expanded">
                             <input ref="urlInput" class="input" type="text" v-model.trim="newUrl"
-                                placeholder="Nova URL" />
+                                :class="{ 'is-danger': !isNewUrlValid && newUrl.length > 0 }" placeholder="Nova URL" />
                         </div>
                         <div class="control">
-                            <button class="button is-success" @click="addUrl" :disabled="!newUrl">Salvar</button>
+                            <button class="button is-success" @click="addUrl" :disabled="!isNewUrlValid">Salvar</button>
                         </div>
                     </div>
 

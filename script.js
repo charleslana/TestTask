@@ -2,6 +2,7 @@ new Vue({
     el: '#app',
     data: {
         isDisabled: false,
+        isInvalidUrl: false,
         testNotification: false,
         testFail: '',
         workspace: {
@@ -145,6 +146,24 @@ new Vue({
                 return 'Ex: **/api/path/**';
             }
             return '';
+        },
+        isUrlValid() {
+            try {
+                const url = new URL(this.workspace.test.url);
+                this.isInvalidUrl = false;
+                return url.protocol === "http:" || url.protocol === "https:";
+            } catch (_) {
+                this.isInvalidUrl = true;
+                return false;
+            }
+        },
+        isNewUrlValid() {
+            try {
+                const url = new URL(this.newUrl);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
         }
     },
     methods: {

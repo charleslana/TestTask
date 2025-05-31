@@ -421,7 +421,7 @@ async function runTestOnce(test, config, base, event, lastTest) {
 
     if (result.fail) {
         event.sender.send('test-failed', result.fail);
-        return;
+        throw new Error(result.fail);
     }
 
     for (const action of test.actions) {

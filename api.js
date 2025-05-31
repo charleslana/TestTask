@@ -35,13 +35,21 @@ new Vue({
     },
     computed: {
         isApiTestValid() {
-            return this.apiTest.url && this.apiTest.method && this.apiTest.expectStatusCode;
+            return this.isValidUrl(this.apiTest.url) && this.apiTest.method && this.apiTest.expectStatusCode;
         },
         hasEnabledTests() {
             return this.apiTests.some(test => !test.disabled);
         }
     },
     methods: {
+        isValidUrl(url) {
+            try {
+                const parsed = new URL(url);
+                return ['http:', 'https:'].includes(parsed.protocol);
+            } catch (e) {
+                return false;
+            }
+        },
         toggleMenu() {
             const target = document.getElementById('navbarBasicExample');
             target.classList.toggle('is-active');
